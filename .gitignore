@@ -31,7 +31,17 @@ MANIFEST
 #   before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+# Perfiles de navegador y datos persistentes
+datos_persistencia/
+descargas/
 
+# Credenciales y cookies
+config/cookies_*.json
+
+# Archivos de entorno y temporales
+__pycache__/
+*.pyc
+.env
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt

@@ -1,0 +1,26 @@
+# ============================================================
+# FaceDPeli - Dependencias del Proyecto
+# Instalar con: pip install -r requirements.txt
+# Instalar Playwright tras pip: playwright install chromium
+# ============================================================
+
+# Automatización de navegador (scraping y publicación web)
+playwright>=1.40.0
+
+# Descarga de videos de redes sociales
+yt-dlp>=2024.1.0
+
+# Servidor Web de Panel de Control (interfaz/servidor_logs.py)
+flask>=3.0.0
+
+# Utilidades de sistema (incluido en stdlib Python 3.10+)
+
+# pathlib   -> Manejo de rutas multiplataforma (stdlib)
+# subprocess -> Llamadas a FFmpeg y yt-dlp como proceso hijo (stdlib)
+# asyncio   -> Bucle de eventos asíncrono para Playwright (stdlib)
+# hashlib   -> Generación de ID único por hash MD5 de URL (stdlib)
+# json      -> Lectura/escritura de archivos de configuración (stdlib)
+# re        -> Normalización y limpieza de URLs de Facebook (stdlib)
+# random    -> Jitter aleatorio para emulación humana (stdlib)
+# datetime  -> Estampas de tiempo ISO 8601 en registros (stdlib)
+# typing    -> Anotaciones de tipo explícitas (stdlib)

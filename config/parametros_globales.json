@@ -1,0 +1,80 @@
+{
+  "_comentario": "Parámetros globales del sistema FaceDPeli. Editar antes de ejecutar.",
+  "extraccion": {
+    "headless": false,
+    "url_objetivo_facebook": "",
+    "fuentes": [],
+    "max_scrolls_por_sesion": 50,
+    "pausa_minima_entre_scrolls_seg": 1.2,
+    "pausa_maxima_entre_scrolls_seg": 3.5,
+    "max_reintentos_descarga": 3,
+    "pausa_reintento_seg": [
+      5,
+      15,
+      45
+    ],
+    "pausa_entre_descargas_seg": 2,
+    "limite_velocidad_descarga": "",
+    "scroll_paso_minimo_px": 300,
+    "scroll_paso_maximo_px": 800,
+    "scroll_pasos_por_iteracion_min": 2,
+    "scroll_pasos_por_iteracion_max": 5,
+    "iteraciones_sin_nuevas_para_parar": 3,
+    "timeout_navegacion_ms": 30000
+  },
+  "edicion": {
+    "duracion_bloque_segundos": 480,
+    "duracion_minima_remanente_segundos": 60,
+    "factor_velocidad": 1,
+    "factores_permitidos": [
+      1.0,
+      1.25,
+      1.5
+    ],
+    "threads_ffmpeg": 4,
+    "encoder_preferido": "auto",
+    "encoders_disponibles": [
+      "h264_nvenc",
+      "h264_qsv",
+      "libx264"
+    ],
+    "preset_recodificacion": "ultrafast"
+  },
+  "publicacion": {
+    "plataformas_activas": [
+      "youtube",
+      "tiktok",
+      "facebook",
+      "instagram",
+      "telegram"
+    ],
+    "canal_telegram": "",
+    "max_reintentos_publicacion": 3,
+    "pausa_entre_publicaciones_seg": 5,
+    "timeout_confirmacion_seg": 120
+  },
+  "rutas": {
+    "directorio_descargas": "descargas",
+    "directorio_procesados": "procesados",
+    "directorio_datos_persistencia": "datos_persistencia",
+    "directorio_config": "config",
+    "cookies_facebook": "config/cookies_facebook.json",
+    "cookies_telegram": "config/cookies_telegram.json",
+    "log_tiempo_real": "datos_persistencia/log_tiempo_real.txt"
+  },
+  "persistencia": {
+    "historial_global": "datos_persistencia/historial_global_enlaces.txt",
+    "cola_pendientes": "datos_persistencia/cola_pendientes.txt",
+    "enlaces_completados": "datos_persistencia/enlaces_completados.txt",
+    "registro_errores": "datos_persistencia/registro_errores.txt",
+    "estado_publicaciones": "datos_persistencia/estado_publicaciones.txt",
+    "fuentes_url": "datos_persistencia/fuentes_url.txt"
+  },
+  "nomenclatura": {
+    "sufijo_parte": "Parte",
+    "separador_nombre": "_",
+    "extension_video": ".mp4",
+    "extension_metadata": ".json"
+  },
+  "canal_telegram": ""
+}
