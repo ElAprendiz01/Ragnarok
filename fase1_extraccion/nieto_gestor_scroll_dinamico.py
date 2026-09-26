@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase1_extraccion/nieto_gestor_scroll_dinamico.py
 JERARQUÍA: Nieto  (Ejecutor de bajo nivel — control de navegador Playwright)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Gestiona el ciclo de vida completo del navegador Chromium mediante
              la API asíncrona de Playwright. Implementa:
                - headless=False (VISIBLE) por defecto para que el usuario vea

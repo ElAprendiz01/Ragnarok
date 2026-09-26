@@ -1,7 +1,7 @@
 # Especificación Técnica de Arquitectura - Fase 1: Extracción & Descarga
 
 ## 1. Visión General del Componente
-La **Fase 1 (Extracción & Descarga)** es la puerta de entrada de la tubería de procesamiento de FaceDPeli. Su objetivo primario es descubrir, auditar, almacenar y descargar videos y reels de fuentes objetivo (como Facebook) en su máxima calidad audiovisual disponible (contenedor MP4, códec de video H.264, audio AAC), abstrayendo al usuario de desbordamientos de memoria RAM, detecciones anti-bot y cuellos de botella por descargas duplicadas.
+La **Fase 1 (Extracción & Descarga)** es la puerta de entrada de la tubería de procesamiento de Ragnarok. Su objetivo primario es descubrir, auditar, almacenar y descargar videos y reels de fuentes objetivo (como Facebook) en su máxima calidad audiovisual disponible (contenedor MP4, códec de video H.264, audio AAC), abstrayendo al usuario de desbordamientos de memoria RAM, detecciones anti-bot y cuellos de botella por descargas duplicadas.
 
 ### Principios Operativos de la Fase 1
 - **Cero Persistencia de Estado en RAM**: Cada enlace detectado se consulta y escribe directamente en el disco duro (archivos `.txt` append-only).

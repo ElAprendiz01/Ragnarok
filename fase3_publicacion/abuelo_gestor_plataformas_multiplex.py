@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase3_publicacion/abuelo_gestor_plataformas_multiplex.py
 JERARQUÍA: Abuelo  (Gestión de instancias complejas — Browser Contexts aislados)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Administra sesiones de navegador completamente aisladas e
              independientes (Playwright BrowserContexts) para cada red social.
              Garantiza que las cookies de TikTok no contaminen las de YouTube,

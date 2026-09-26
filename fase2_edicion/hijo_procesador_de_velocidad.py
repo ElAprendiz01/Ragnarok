@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase2_edicion/hijo_procesador_de_velocidad.py
 JERARQUÍA: Hijo  (Modificador de parámetros — construcción de flags de FFmpeg)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Construye la lista de argumentos (flags) correcta para el binario
              FFmpeg en función del factor de velocidad seleccionado. Encapsula
              la lógica de los filtros de video (setpts) y audio (atempo) para

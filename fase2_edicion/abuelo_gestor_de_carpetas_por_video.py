@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase2_edicion/abuelo_gestor_de_carpetas_por_video.py
 JERARQUÍA: Abuelo  (Gestión de estructura de archivos y carpetas por video)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Responsable de toda la taxonomía física de directorios del pipeline
              de edición. Crea las carpetas de salida en 'procesados/', construye
              la nomenclatura de partes, gestiona el archivo metadata_segmentada.json

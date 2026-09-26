@@ -9,7 +9,7 @@ Este documento detalla las medidas de ingeniería aplicadas en la **Fase 1** par
 ### 1.1 El Problema de los Sistemas Convencionales
 Los scrapers tradicionales almacenan los arreglos de URLs encontradas en la memoria de Python (listas o diccionarios). En ejecuciones continuas de miles de videos, la memoria RAM crece exponencialmente, ralentizando la recolección de basura (GC) y provocando colapsos por `OutOfMemoryError` en servidores o máquinas locales de bajos recursos.
 
-### 1.2 La Solución FaceDPeli
+### 1.2 La Solución Ragnarok
 - **E/S Atómica Directa a ROM**: Cada URL identificada en el DOM de la página no se acumula en listas globales de Python. Se procesa inmediatamente en un bloque de ejecución corto y se escribe en el archivo en disco `datos_persistencia/cola_pendientes.txt`.
 - **Destrucción de Referencias Cortas**: Los objetos de Python (como listas de fragmentos DOM) se instancian dentro de contextos locales `async with` o funciones de ámbito estrecho, garantizando que el recolector de basura de Python los libere de forma instantánea al cambiar de iteración.
 - **Techo Máximo de Memoria**: El proceso completo de Python de la Fase 1 debe mantener un footprint estático entre **45 MB y 85 MB de RAM**, independientemente de si procesa 10 o 10,000 videos.

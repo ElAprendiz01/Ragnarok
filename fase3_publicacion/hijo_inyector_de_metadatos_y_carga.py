@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase3_publicacion/hijo_inyector_de_metadatos_y_carga.py
 JERARQUÍA: Hijo  (Inyección de datos — formularios de publicación)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Encargado de las acciones concretas de relleno de formularios
              en los portales de publicación de cada red social: sube el archivo
              MP4 mediante set_input_files o eventos de drop, escribe el título
@@ -122,7 +122,7 @@ class HijoInyectorDeMetadatosYCarga:
         Returns:
             True si la descripción fue escrita correctamente.
         """
-        hashtags = f"#resumen #pelicula #parte{numero_parte} #facedpeli"
+        hashtags = f"#resumen #pelicula #parte{numero_parte} #Ragnarok"
         descripcion_completa = f"{descripcion_original}\n{hashtags}"
         # Limitar a 2200 caracteres (límite de Instagram/TikTok)
         descripcion_recortada = descripcion_completa[:2200]

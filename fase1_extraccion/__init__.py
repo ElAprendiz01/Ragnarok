@@ -1,7 +1,7 @@
 """
 ================================================================================
 MÓDULO: fase1_extraccion/__init__.py
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Inicializador del paquete de la Fase 1 - Extracción & Descarga.
              Expone los módulos principales para importación limpia.
 ================================================================================

@@ -1,5 +1,5 @@
 # ============================================================
-# FaceDPeli - Dependencias del Proyecto
+# Ragnarok - Dependencias del Proyecto
 # Instalar con: pip install -r requirements.txt
 # Instalar Playwright tras pip: playwright install chromium
 # ============================================================

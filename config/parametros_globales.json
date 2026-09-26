@@ -1,5 +1,5 @@
 {
-  "_comentario": "Parámetros globales del sistema FaceDPeli. Editar antes de ejecutar.",
+  "_comentario": "Parámetros globales del sistema Ragnarok. Editar antes de ejecutar.",
   "extraccion": {
     "headless": false,
     "url_objetivo_facebook": "",
@@ -48,7 +48,10 @@
       "instagram",
       "telegram"
     ],
-    "canal_telegram": "",
+    "canal_telegram": "@salip_pelis",
+    "canales_telegram": [
+      "@salip_pelis"
+    ],
     "max_reintentos_publicacion": 3,
     "pausa_entre_publicaciones_seg": 5,
     "timeout_confirmacion_seg": 120
@@ -76,5 +79,8 @@
     "extension_video": ".mp4",
     "extension_metadata": ".json"
   },
-  "canal_telegram": ""
-}
+  "canal_telegram": "@salip_pelis",
+  "canales_telegram": [
+    "@salip_pelis"
+  ]
+}

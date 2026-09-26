@@ -1,4 +1,11 @@
 // ────────────────────────────────────────────
+// CONFIGURACIÓN API BASE
+// ────────────────────────────────────────────
+const API_BASE = (window.location.protocol === 'http:' || window.location.protocol === 'https:') 
+  ? '' 
+  : 'http://127.0.0.1:5757';
+
+// ────────────────────────────────────────────
 // ESTADO GLOBAL
 // ────────────────────────────────────────────
 const App = {
@@ -9,6 +16,8 @@ const App = {
   playlist: [],
   galeria: [],
   metaDebounceTimer: null,
+  canalesTelegram: [],
+  canalTelegramActivo: '',
 };
 
 // Utilidad para evitar que comillas o caracteres especiales rompan atributos y HTML
@@ -38,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(refrescarEstadoAutomatico, 3000);
   setInterval(cargarEstadoCookies, 6000);
 
-  addLog('info', 'Panel de Control FaceDPeli iniciado. Sincronizando con servidor local...');
+  addLog('info', 'Panel de Control Ragnarok iniciado. Sincronizando con servidor local...');
   cargarGaleriaDesdeServidor();
   cargarConfiguracionCanalTelegram();
   cargarEstadoCookies();
@@ -84,9 +93,16 @@ function navTo(pg, btn) {
   const elDash = document.getElementById('pg-dash');
   const elVids = document.getElementById('pg-videos');
   const elEstudio = document.getElementById('pg-estudio');
-  if (elDash) elDash.style.display = isDashRelated ? '' : 'none';
-  if (elVids) elVids.style.display = pg === 'videos' ? '' : 'none';
-  if (elEstudio) elEstudio.style.display = pg === 'estudio' ? '' : 'none';
+
+  if (elDash) elDash.style.display = isDashRelated ? 'block' : 'none';
+  if (elVids) {
+    elVids.classList.toggle('pg-hidden', pg !== 'videos');
+    elVids.style.display = pg === 'videos' ? 'block' : 'none';
+  }
+  if (elEstudio) {
+    elEstudio.classList.toggle('pg-hidden', pg !== 'estudio');
+    elEstudio.style.display = pg === 'estudio' ? 'block' : 'none';
+  }
   const titles = {
     dash: 'Dashboard',
     estudio: 'Estudio de Reproducción & Publicación',
@@ -102,7 +118,7 @@ function navTo(pg, btn) {
     cargarGaleriaDesdeServidor();
   } else if (pg === 'estudio') {
     if (App.galeria.length > 0 && App.estudio.videoActivo === null) {
-      cargarVideoEnEstudio(0, false);
+      prepararVideoEnEstudio(0);
     }
     renderEstudioPlaylist(App.galeria);
   } else if (pg === 'fases') {
@@ -135,7 +151,7 @@ async function cargarGaleriaDesdeServidor() {
       if (elClips) elClips.textContent = numEdit;
 
       if (App.estudio.videoActivo === null && App.galeria.length > 0) {
-        cargarVideoEnEstudio(0, false);
+        prepararVideoEnEstudio(0);
       }
 
       if (ultimaCantVideosLogueada !== data.videos.length) {
@@ -200,31 +216,7 @@ async function guardarCanalTelegram() {
     mostrarToast('warning', '⚠️ Escribe el nombre, handle o URL del canal de Telegram.');
     return;
   }
-  const canal = normalizarCanalTelegram(canalRaw);
-  input.value = canal;
-
-  try {
-    const res = await fetch(API_BASE + '/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ canal_telegram: canal })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      const lbl = document.getElementById('lbl-canal-tg');
-      const inputM = document.getElementById('m-tg-canal-input');
-      if (lbl) lbl.textContent = canal;
-      if (inputM) inputM.value = canal;
-      mostrarToast('success', `✅ Canal de Telegram guardado: ${canal}`);
-      addLog('ok', `Canal de Telegram actualizado a: <span class="hl">${canal}</span>`);
-    } else {
-      mostrarToast('error', `Error al guardar canal: ${data.error}`);
-    }
-  } catch(e) {
-    const lbl = document.getElementById('lbl-canal-tg');
-    if (lbl) lbl.textContent = canal;
-    mostrarToast('info', `Canal de Telegram guardado localmente: ${canal}`);
-  }
+  await agregarYGuardarCanalTelegram(canalRaw);
 }
 
 async function cargarConfiguracionCanalTelegram() {
@@ -232,16 +224,176 @@ async function cargarConfiguracionCanalTelegram() {
     const res = await fetch(API_BASE + '/config');
     if (!res.ok) return;
     const cfg = await res.json();
-    if (cfg.canal_telegram) {
-      const canalNorm = normalizarCanalTelegram(cfg.canal_telegram);
-      const input = document.getElementById('input-canal-tg');
-      const lbl = document.getElementById('lbl-canal-tg');
-      const inputM = document.getElementById('m-tg-canal-input');
-      if (input) input.value = canalNorm;
-      if (lbl) lbl.textContent = canalNorm;
-      if (inputM) inputM.value = canalNorm;
+
+    let canales = [];
+    if (cfg.canales_telegram && Array.isArray(cfg.canales_telegram)) {
+      canales = cfg.canales_telegram;
+    } else if (cfg.publicacion && Array.isArray(cfg.publicacion.canales_telegram)) {
+      canales = cfg.publicacion.canales_telegram;
+    }
+
+    const canalActivo = cfg.canal_telegram || (cfg.publicacion ? cfg.publicacion.canal_telegram : '') || (canales.length > 0 ? canales[0] : '');
+
+    if (canalActivo && !canales.includes(canalActivo)) {
+      canales.unshift(canalActivo);
+    }
+
+    App.canalesTelegram = canales.map(normalizarCanalTelegram).filter(Boolean);
+    App.canalTelegramActivo = normalizarCanalTelegram(canalActivo);
+
+    actualizarVistasCanalTelegram();
+  } catch(e) {}
+}
+
+function actualizarVistasCanalTelegram() {
+  const canalActivo = App.canalTelegramActivo;
+  const canales = App.canalesTelegram || [];
+
+  // 1. Elementos generales del panel
+  const inputMain = document.getElementById('input-canal-tg');
+  const lblMain = document.getElementById('lbl-canal-tg');
+  const inputManual = document.getElementById('m-tg-canal-input');
+
+  if (inputMain && canalActivo) inputMain.value = canalActivo;
+  if (lblMain) lblMain.textContent = canalActivo || 'Sin canal configurado';
+  if (inputManual && canalActivo) inputManual.value = canalActivo;
+
+  // 2. Elementos del modal de publicación directa (m-pub-canal)
+  const inputPub = document.getElementById('m-pub-canal');
+  const estadoLbl = document.getElementById('m-pub-canal-estado');
+  const dropContainer = document.getElementById('m-pub-canales-dropdown-container');
+  const selDropdown = document.getElementById('m-pub-canales-select');
+  const datalist = document.getElementById('m-pub-canales-datalist');
+  const chipsContainer = document.getElementById('m-pub-canales-chips-container');
+  const chipsList = document.getElementById('m-pub-canales-chips');
+
+  if (inputPub && (!inputPub.value || canales.includes(inputPub.value))) {
+    inputPub.value = canalActivo || '';
+  }
+
+  if (estadoLbl) {
+    if (canalActivo) {
+      estadoLbl.textContent = `${canales.length} canal${canales.length > 1 ? 'es' : ''} guardado${canales.length > 1 ? 's' : ''}`;
+    } else {
+      estadoLbl.textContent = 'Sin canal configurado';
+    }
+  }
+
+  // Si hay más de 1 canal (2 o más): mostrar dropdown y selector tipo lista
+  if (canales.length >= 2) {
+    if (dropContainer) dropContainer.style.display = 'block';
+    if (selDropdown) {
+      selDropdown.innerHTML = `
+        <option value="">-- Elige un canal guardado (${canales.length}) --</option>
+        ${canales.map(c => `<option value="${escapeHtml(c)}" ${c === canalActivo ? 'selected' : ''}>${escapeHtml(c)} ${c === canalActivo ? '★ (Seleccionado)' : ''}</option>`).join('')}
+        <option value="__nuevo__">➕ Escribir otro canal nuevo...</option>
+      `;
+    }
+    if (chipsContainer) chipsContainer.style.display = 'block';
+  } else if (canales.length === 1) {
+    if (dropContainer) dropContainer.style.display = 'none';
+    if (chipsContainer) chipsContainer.style.display = 'block';
+  } else {
+    if (dropContainer) dropContainer.style.display = 'none';
+    if (chipsContainer) chipsContainer.style.display = 'none';
+  }
+
+  // Datalist para autocompletado en el input
+  if (datalist) {
+    datalist.innerHTML = canales.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
+  }
+
+  // Chips interactivos
+  if (chipsList) {
+    chipsList.innerHTML = canales.map(c => {
+      const isActivo = c === canalActivo;
+      return `
+        <span class="tech-chip" style="cursor:pointer;background:${isActivo ? 'rgba(0,210,255,0.18)' : 'var(--bg2)'};border-color:${isActivo ? 'var(--cyan)' : 'var(--border)'};display:inline-flex;align-items:center;gap:5px;padding:3px 8px" onclick="seleccionarCanalDeLista('${escapeHtml(c)}')">
+          <span style="color:${isActivo ? 'var(--cyan)' : 'var(--txt1)'}">${isActivo ? '✓ ' : ''}${escapeHtml(c)}</span>
+          <span style="color:var(--txt3);font-size:11px;margin-left:3px;cursor:pointer" title="Eliminar canal de la lista" onclick="event.stopPropagation();eliminarCanalTelegram('${escapeHtml(c)}')">✕</span>
+        </span>
+      `;
+    }).join('');
+  }
+}
+
+function seleccionarCanalDeLista(val) {
+  const inputPub = document.getElementById('m-pub-canal');
+  if (val === '__nuevo__') {
+    if (inputPub) {
+      inputPub.value = '@';
+      inputPub.focus();
+    }
+    return;
+  }
+  if (!val) return;
+  const canalNorm = normalizarCanalTelegram(val);
+  if (inputPub) inputPub.value = canalNorm;
+  App.canalTelegramActivo = canalNorm;
+  actualizarVistasCanalTelegram();
+}
+
+async function guardarCanalRapidoModal() {
+  const inputPub = document.getElementById('m-pub-canal');
+  if (!inputPub) return;
+  const val = inputPub.value.trim();
+  if (!val) {
+    mostrarToast('warning', '⚠️ Escribe un canal de Telegram.');
+    return;
+  }
+  await agregarYGuardarCanalTelegram(val);
+}
+
+async function agregarYGuardarCanalTelegram(canalRaw) {
+  const canalNorm = normalizarCanalTelegram(canalRaw);
+  if (!canalNorm) return;
+
+  if (!App.canalesTelegram.includes(canalNorm)) {
+    App.canalesTelegram.push(canalNorm);
+  }
+  App.canalTelegramActivo = canalNorm;
+
+  try {
+    const res = await fetch(API_BASE + '/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        canal_telegram: canalNorm,
+        canales_telegram: App.canalesTelegram
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('success', `💾 Canal guardado: ${canalNorm}`);
+      addLog('ok', `Canal de Telegram guardado: <span class="hl">${canalNorm}</span>`);
     }
   } catch(e) {}
+
+  actualizarVistasCanalTelegram();
+}
+
+async function eliminarCanalTelegram(canal) {
+  App.canalesTelegram = App.canalesTelegram.filter(c => c !== canal);
+  if (App.canalTelegramActivo === canal) {
+    App.canalTelegramActivo = App.canalesTelegram[0] || '';
+  }
+  const inputPub = document.getElementById('m-pub-canal');
+  if (inputPub) inputPub.value = App.canalTelegramActivo;
+
+  try {
+    await fetch(API_BASE + '/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        canal_telegram: App.canalTelegramActivo,
+        canales_telegram: App.canalesTelegram
+      })
+    });
+    mostrarToast('info', `Canal eliminado: ${canal}`);
+    addLog('info', `Canal eliminado: <span class="hl">${canal}</span>`);
+  } catch(e) {}
+
+  actualizarVistasCanalTelegram();
 }
 
 function abrirModalTelegramManual() {
@@ -252,13 +404,23 @@ function abrirModalTelegramManual() {
   if (inputCanal) inputCanal.value = canalActual === 'Sin canal configurado' ? '' : canalActual;
 
   renderListaVideosModalTelegram();
-  modal.style.display = 'flex';
+  abrirModal('m-telegram-manual');
+}
+
+function abrirModal(id) {
+  const m = document.getElementById(id);
+  if (m) {
+    m.style.display = 'flex';
+    m.classList.add('open');
+  }
 }
 
 function cerrarModal(id) {
-
   const m = document.getElementById(id);
-  if (m) m.style.display = 'none';
+  if (m) {
+    m.classList.remove('open');
+    m.style.display = 'none';
+  }
 }
 
 function renderListaVideosModalTelegram() {
@@ -366,11 +528,11 @@ function renderGaleria(lista) {
           <div class="dropdown" style="display:inline-block;position:relative">
             <button class="btn bs bsm" onclick="event.stopPropagation();toggleDropMenu(this)">📤 Publicar ▾</button>
             <div class="dropdown-content" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;z-index:99;min-width:170px;box-shadow:0 8px 24px rgba(0,0,0,.5);padding:4px 0">
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();ejecutarPublicacionIndividual('telegram')">✈️ Solo Telegram (HD)</a>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();ejecutarPublicacionIndividual('youtube')">▶️ Solo YouTube</a>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();ejecutarPublicacionIndividual('tiktok')">🎵 Solo TikTok</a>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();ejecutarPublicacionIndividual('facebook')">📘 Solo Facebook</a>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();ejecutarPublicacionIndividual('instagram')">📸 Solo Instagram</a>
+              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'telegram')">✈️ Solo Telegram (HD)</a>
+              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'youtube')">▶️ Solo YouTube</a>
+              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'tiktok')">🎵 Solo TikTok</a>
+              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'facebook')">📘 Solo Facebook</a>
+              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'instagram')">📸 Solo Instagram</a>
               <div style="border-top:1px solid var(--border);margin:4px 0"></div>
               <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--cyan);font-weight:700;text-decoration:none" onclick="event.preventDefault();event.stopPropagation();ejecutarFase(3)">🚀 Todas las Redes</a>
             </div>
@@ -600,7 +762,7 @@ function abrirEnEstudio(idx) {
   cargarVideoEnEstudio(idx, true);
 }
 
-function cargarVideoEnEstudio(idx, autoplay = true) {
+function prepararVideoEnEstudio(idx) {
   if (idx < 0 || idx >= App.playlist.length) return;
   App.estudio.idx = idx;
   const v = App.playlist[idx];
@@ -608,6 +770,9 @@ function cargarVideoEnEstudio(idx, autoplay = true) {
 
   const video = document.getElementById('estudio-video');
   const poster = document.getElementById('estudio-poster');
+  const posterTitle = document.getElementById('estudio-poster-title');
+  const posterSub = document.getElementById('estudio-poster-sub');
+  const posterPlayBtn = document.getElementById('estudio-poster-play-btn');
   const badgeEstado = document.getElementById('estudio-badge-estado');
   const badgeRes = document.getElementById('estudio-badge-resolucion');
 
@@ -618,26 +783,17 @@ function cargarVideoEnEstudio(idx, autoplay = true) {
   }
   if (badgeRes) badgeRes.textContent = v.resolucion || 'HD';
 
-  if (v.url_stream) {
-    if (video) {
-      video.src = API_BASE + v.url_stream;
-      video.playbackRate = App.estudio.speed || 1.0;
-    }
-    if (poster) poster.style.display = 'none';
-    if (autoplay && video) {
-      video.play().catch(e => {});
-    }
-  } else {
-    if (video) {
-      video.pause();
-      video.removeAttribute('src');
-      video.load();
-    }
-    if (poster) {
-      poster.style.display = 'flex';
-      const t = document.getElementById('estudio-poster-title');
-      if (t) t.textContent = v.titulo;
-    }
+  // Standby instantáneo: CERO bytes de video transferidos hasta dar clic
+  if (video) {
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+  }
+  if (poster) {
+    poster.style.display = 'flex';
+    if (posterTitle) posterTitle.textContent = v.titulo;
+    if (posterSub) posterSub.textContent = `${v.dur || '0:00'} · ${v.tamano || ''} · ${v.resolucion || 'HD'} — Haz clic para reproducir`;
+    if (posterPlayBtn) posterPlayBtn.style.display = 'inline-flex';
   }
 
   cargarMetadatosEnEditor(v);
@@ -657,15 +813,82 @@ function cargarVideoEnEstudio(idx, autoplay = true) {
   if (durEl) durEl.textContent = v.dur || '0:00';
   if (fill) fill.style.width = '0%';
   if (thumb) thumb.style.left = '0%';
-  if (playBtn) playBtn.textContent = autoplay ? '⏸' : '▶';
+  if (playBtn) playBtn.textContent = '▶';
+}
 
-  addLog('info', `Estudio cargado con: <span class="hl">${escapeHtml(v.titulo)}</span>`);
+function cargarVideoEnEstudio(idx, autoplay = true) {
+  if (idx < 0 || idx >= App.playlist.length) return;
+  App.estudio.idx = idx;
+  const v = App.playlist[idx];
+  App.estudio.videoActivo = v;
+
+  if (!autoplay) {
+    prepararVideoEnEstudio(idx);
+    return;
+  }
+
+  const video = document.getElementById('estudio-video');
+  const poster = document.getElementById('estudio-poster');
+  const badgeEstado = document.getElementById('estudio-badge-estado');
+  const badgeRes = document.getElementById('estudio-badge-resolucion');
+
+  if (badgeEstado) {
+    badgeEstado.textContent = (v.estado || 'descargado').toUpperCase();
+    badgeEstado.style.borderColor = v.estado === 'editado' ? 'var(--purple)' : 'var(--cyan)';
+    badgeEstado.style.color = v.estado === 'editado' ? 'var(--purple)' : 'var(--cyan)';
+  }
+  if (badgeRes) badgeRes.textContent = v.resolucion || 'HD';
+
+  if (v.url_stream) {
+    if (video) {
+      const fullUrl = API_BASE + v.url_stream;
+      if (video.src !== fullUrl) {
+        video.src = fullUrl;
+      }
+      video.playbackRate = App.estudio.speed || 1.0;
+      video.load();
+      video.play().catch(e => {});
+    }
+    if (poster) poster.style.display = 'none';
+  } else {
+    prepararVideoEnEstudio(idx);
+    return;
+  }
+
+  cargarMetadatosEnEditor(v);
+
+  // Marcar item activo en la lista lateral
+  document.querySelectorAll('.estudio-pl-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+
+  const curEl = document.getElementById('estudio-cur');
+  const durEl = document.getElementById('estudio-dur');
+  const playBtn = document.getElementById('estudio-play-btn');
+
+  if (curEl) curEl.textContent = '0:00';
+  if (durEl) durEl.textContent = v.dur || '0:00';
+  if (playBtn) playBtn.textContent = '⏸';
+
+  addLog('info', `Reproduciendo en Estudio: <span class="hl">${escapeHtml(v.titulo)}</span>`);
+}
+
+function estudioPosterClick() {
+  if (App.estudio.videoActivo) {
+    cargarVideoEnEstudio(App.estudio.idx, true);
+  }
 }
 
 function estudioTogglePlay() {
   const v = document.getElementById('estudio-video');
-  if (!v || !v.src) return;
+  if (!v) return;
+  if ((!v.src || !v.getAttribute('src')) && App.estudio.videoActivo) {
+    cargarVideoEnEstudio(App.estudio.idx, true);
+    return;
+  }
   if (v.paused) {
+    const poster = document.getElementById('estudio-poster');
+    if (poster) poster.style.display = 'none';
     v.play().catch(e => {});
   } else {
     v.pause();
@@ -922,16 +1145,116 @@ function restaurarMetadatosOriginales() {
   mostrarToast('info', 'Valores restaurados desde la memoria actual.');
 }
 
+let videoPendientePublicar = null;
+let plataformaPendientePublicar = 'telegram';
+
+function publicarVideoDesdeGaleria(idx, plat) {
+  cargarVideoEnEstudio(idx, false);
+  publicarVideoActivo(plat);
+}
+
 async function publicarVideoActivo(plat) {
   const v = App.estudio.videoActivo || App.playlist[App.estudio.idx];
   if (!v) {
-    mostrarToast('warning', '⚠️ Selecciona un video primero.');
+    mostrarToast('warning', '⚠️ Selecciona un video primero en el Estudio.');
     return;
   }
-  // Asegurar que los metadatos editados se guarden antes de publicar
+  // Asegurar que los metadatos editados en pantalla se guarden en disco antes de publicar
   await guardarMetadatosActivo(true);
-  mostrarToast('info', `🚀 Lanzando publicación de "${escapeHtml(v.titulo)}" en ${plat.toUpperCase()}...`);
-  await ejecutarPublicacionIndividual(plat);
+
+  videoPendientePublicar = v;
+  plataformaPendientePublicar = plat || 'telegram';
+
+  // Configurar elementos del modal
+  const elHdr = document.getElementById('m-pub-titulo-hdr');
+  const elVidTitulo = document.getElementById('m-pub-video-titulo');
+  const elVidId = document.getElementById('m-pub-video-id');
+  const elVidDur = document.getElementById('m-pub-video-dur');
+  const elVidTam = document.getElementById('m-pub-video-tam');
+  const elVidEstado = document.getElementById('m-pub-video-estado');
+  const elCanal = document.getElementById('m-pub-canal');
+  const elPlatLbl = document.getElementById('m-pub-plat-label');
+  const grpCanal = document.getElementById('m-pub-grupo-canal');
+  const btnConfirmar = document.getElementById('m-pub-btn-confirmar');
+
+  const iconos = {
+    telegram: '✈️ Telegram HD',
+    youtube: '▶️ YouTube',
+    tiktok: '🎵 TikTok',
+    facebook: '📘 Facebook',
+    instagram: '📸 Instagram'
+  };
+
+  const nombrePlat = iconos[plat] || (plat ? plat.toUpperCase() : 'TELEGRAM HD');
+  if (elHdr) elHdr.textContent = `Publicar Video en ${nombrePlat}`;
+  if (elPlatLbl) elPlatLbl.textContent = nombrePlat;
+  if (elVidTitulo) elVidTitulo.textContent = v.titulo || 'Sin título';
+  if (elVidId) elVidId.textContent = v.id || '—';
+  if (elVidDur) elVidDur.textContent = v.dur || '—';
+  if (elVidTam) elVidTam.textContent = v.tamano || '—';
+  if (elVidEstado) elVidEstado.textContent = (v.estado || 'descargado').toUpperCase();
+
+  // Controlar visibilidad del campo canal
+  if (grpCanal) {
+    grpCanal.style.display = (plat === 'telegram') ? 'block' : 'none';
+  }
+  if (elCanal && plat === 'telegram') {
+    elCanal.value = App.canalTelegramActivo || '';
+    actualizarVistasCanalTelegram();
+  }
+
+  if (btnConfirmar) {
+    btnConfirmar.className = (plat === 'telegram') ? 'btn bp btn-telegram' : 'btn bp';
+    btnConfirmar.textContent = `🚀 Publicar en ${nombrePlat}`;
+  }
+
+  abrirModal('m-publicar-activo');
+}
+
+async function confirmarPublicacionDirecta() {
+  if (!videoPendientePublicar) {
+    mostrarToast('warning', '⚠️ No hay un video activo seleccionado.');
+    cerrarModal('m-publicar-activo');
+    return;
+  }
+
+  const v = videoPendientePublicar;
+  const plat = plataformaPendientePublicar || 'telegram';
+  const elModo = document.querySelector('input[name="m-pub-modo"]:checked');
+  const modo = elModo ? elModo.value : 'completo';
+  const canal = document.getElementById('m-pub-canal')?.value?.trim() || '';
+
+  if (canal && plat === 'telegram') {
+    agregarYGuardarCanalTelegram(canal).catch(() => {});
+  }
+
+  cerrarModal('m-publicar-activo');
+  mostrarToast('info', `🚀 Iniciando publicación de "${escapeHtml(v.titulo)}" en ${plat.toUpperCase()} (${modo.toUpperCase()})...`);
+
+  try {
+    const res = await fetch(API_BASE + '/api/publicar/individual', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id_video: v.id,
+        plataforma: plat,
+        modo: modo,
+        canal: canal
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('success', `✓ Publicación en ${plat.toUpperCase()} iniciada exitosamente.`);
+      App.fases[3] = 'running';
+      setFaseUI(3, 'running', `Publicando (${plat.toUpperCase()})...`);
+      document.getElementById('fc3')?.classList.add('active-c');
+      setSysUI('running', `Publicación directa en ${plat.toUpperCase()} en ejecución`);
+    } else {
+      mostrarToast('error', `Error al publicar: ${data.error || 'Desconocido'}`);
+    }
+  } catch (err) {
+    mostrarToast('error', `Error al comunicarse con el servidor: ${err.message}`);
+  }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -951,12 +1274,13 @@ function renderEstudioPlaylist(videos) {
   }
 
   contenedor.innerHTML = videos.map((v, i) => {
-    const isActive = i === App.estudio.idx;
+    const actualIdx = v.idx !== undefined ? v.idx : i;
+    const isActive = actualIdx === App.estudio.idx;
     const tituloEsc = escapeHtml(v.titulo);
     const b = estadoBadge[v.estado] || estadoBadge.descargado;
     return `
-      <div class="estudio-pl-item ${isActive ? 'active' : ''}" data-id="${v.id}" onclick="cargarVideoEnEstudio(${i}, true)" title="${tituloEsc}">
-        <span class="estudio-pl-num">#${i+1}</span>
+      <div class="estudio-pl-item ${isActive ? 'active' : ''}" data-id="${v.id}" onclick="cargarVideoEnEstudio(${actualIdx}, true)" title="${tituloEsc}">
+        <span class="estudio-pl-num">#${actualIdx+1}</span>
         <div class="estudio-pl-info">
           <div class="estudio-pl-title">${tituloEsc}</div>
           <div class="estudio-pl-meta">
@@ -1091,10 +1415,6 @@ function initDrag() {
 // ────────────────────────────────────────────
 // CONEXIÓN CON SERVIDORES SSE Y API PYTHON
 // ────────────────────────────────────────────
-const API_BASE = (window.location.protocol === 'http:' || window.location.protocol === 'https:') 
-  ? '' 
-  : 'http://127.0.0.1:5757';
-
 let sseSource = null;
 
 function conectarServidorLogs() {
@@ -1565,8 +1885,8 @@ async function guardarConfig() {
     mostrarToast('warning', 'Configuración actualizada en vista local.');
   }
 }
-function abrirVelocidad() { document.getElementById('m-vel')?.classList.add('open'); }
-function cerrarModal(id)  { document.getElementById(id)?.classList.remove('open'); }
+
+function abrirVelocidad() { abrirModal('m-vel'); }
 function aplicarVel() {
   const checked = document.querySelector('input[name="vel"]:checked');
   const v = checked ? checked.value : '1.0';
@@ -1575,7 +1895,7 @@ function aplicarVel() {
   addLog('info', `Factor de velocidad actualizado a <span class="hl">${v}x</span>.`);
 }
 
-document.querySelectorAll('.mover').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+document.querySelectorAll('.mover').forEach(o => o.addEventListener('click', e => { if(e.target===o) cerrarModal(o.id); }));
 
 // ────────────────────────────────────────────
 // LOG DE ACTIVIDAD

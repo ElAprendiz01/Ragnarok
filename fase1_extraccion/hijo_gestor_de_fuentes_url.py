@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase1_extraccion/hijo_gestor_de_fuentes_url.py
 JERARQUÍA: Hijo  (Lógica de negocio — clasificación y validación de fuentes)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Clasifica, valida y normaliza cualquier URL de Facebook que el
              usuario configure como fuente de videos. Soporta los 6 tipos de
              fuente que Facebook ofrece: Watch global, página, grupo, perfil,

@@ -1,13 +1,13 @@
-# Guía de Instalación y Ejecución de FaceDPeli
+# Guía de Instalación y Ejecución de Ragnarok
 
-Esta guía explica las formas disponibles para instalar dependencias y levantar el sistema **FaceDPeli**.
+Esta guía explica las formas disponibles para instalar dependencias y levantar el sistema **Ragnarok**.
 
 ---
 
 ## 🚀 Opción 1: Arranque Automático (Recomendada)
 
 ### En Windows (Doble Clic)
-Haz doble clic en el archivo [iniciar.bat](file:///c:/Users/gmayc/OneDrive/Escritorio/facedpeli/iniciar.bat). Este script realizará todo de forma automática:
+Haz doble clic en el archivo [iniciar.bat](file:///c:/Users/hola/iniciar.bat). Este script realizará todo de forma automática:
 1. Instala/actualiza las librerías desde `requirements.txt`.
 2. Instala Chromium para Playwright.
 3. Abre el navegador en `http://127.0.0.1:5757`.
@@ -18,7 +18,7 @@ Ejecuta en tu consola:
 ```powershell
 python iniciar_sistema.py
 ```
-Este script ([iniciar_sistema.py](file:///c:/Users/gmayc/OneDrive/Escritorio/facedpeli/iniciar_sistema.py)) verifica las dependencias, descarga Chromium si hace falta y levanta la interfaz visual.
+Este script ([iniciar_sistema.py](file:///c:/Users/hola/iniciar_sistema.py)) verifica las dependencias, descarga Chromium si hace falta y levanta la interfaz visual.
 
 ---
 

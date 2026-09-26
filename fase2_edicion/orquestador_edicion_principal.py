@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase2_edicion/orquestador_edicion_principal.py
 JERARQUÍA: Orquestador  (Punto de entrada de la Fase 2 — Sin lógica pesada)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Punto de entrada de la Fase 2: Edición & Segmentación. Lee los
              videos completados desde enlaces_completados.txt, coordina el
              pipeline de cálculo de segmentos, construcción de flags de FFmpeg
@@ -80,7 +80,7 @@ class OrquestadorEdicionPrincipal:
         disponibles en la cola de completados.
         """
         self._log("==========================================================")
-        self._log("  FACEDPELI — FASE 2: EDICIÓN & SEGMENTACIÓN")
+        self._log("  Ragnarok — FASE 2: EDICIÓN & SEGMENTACIÓN")
         self._log("==========================================================")
 
         videos = self._leer_videos_completados()

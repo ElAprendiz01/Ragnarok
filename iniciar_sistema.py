@@ -1,8 +1,8 @@
 """
 ================================================================================
 ARCHIVO: iniciar_sistema.py
-PROYECTO: FaceDPeli
-DESCRIPCIÓN: Lanzador e instalador automático de FaceDPeli en Python.
+PROYECTO: Ragnarok
+DESCRIPCIÓN: Lanzador e instalador automático de Ragnarok en Python.
              Comprueba e instala las dependencias de `requirements.txt`,
              descarga los binarios de Chromium para Playwright y arranca
              el Panel de Control Web en http://127.0.0.1:5757.
@@ -36,7 +36,7 @@ def ejecutar_comando(comando: list, descripcion: str) -> bool:
 def main() -> None:
     """Punto de entrada del instalador y lanzador automático."""
     print("=" * 60)
-    print("  FaceDPeli — Instalador y Lanzador Automático")
+    print("  Ragnarok — Instalador y Lanzador Automático")
     print("=" * 60)
 
     # Paso 1: Instalar dependencias desde requirements.txt

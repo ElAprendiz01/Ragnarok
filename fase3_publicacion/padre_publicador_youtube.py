@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase3_publicacion/padre_publicador_youtube.py
 JERARQUÍA: Padre  (Lógica de plataforma específica — YouTube Studio)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Contiene el flujo de navegación específico del portal YouTube
              Studio para subir videos. Navega a la URL de subida, espera
              el cargador y delega las acciones de formulario al inyector.

@@ -1,7 +1,7 @@
 """
 ================================================================================
 MÓDULO: fase2_edicion/__init__.py
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Inicializador del paquete de la Fase 2 - Edición & Procesamiento.
 ================================================================================
 """

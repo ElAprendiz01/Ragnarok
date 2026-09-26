@@ -1,7 +1,7 @@
-# Arquitectura General del Sistema FaceDPeli
+# Arquitectura General del Sistema Ragnarok
 
 ## 1. Visión Holística y Principios de Diseño
-El sistema **FaceDPeli** es una plataforma automatizada de extremo a extremo diseñada para la extracción, procesamiento/edición y redistribución multicanal de contenido audiovisual en formato de video corto y clips segmentados.
+El sistema **Ragnarok** es una plataforma automatizada de extremo a extremo diseñada para la extracción, procesamiento/edición y redistribución multicanal de contenido audiovisual en formato de video corto y clips segmentados.
 
 El sistema sigue cuatro principios fundamentales de diseño:
 1. **Regla de Responsabilidad Única y Modularidad Escala Corta**: Ningún archivo fuente en Python superará las **300 líneas de código**. La jerarquía de llamados sigue una estructura taxonómica clara: `orquestador` -> `abuelo` -> `padre` -> `hijo` -> `nieto`.
@@ -49,7 +49,7 @@ flowchart TD
 ## 3. Estructura de Directorios del Proyecto y Documentación
 
 ```
-facedpeli/
+Ragnarok/
 ├── config/
 │   ├── parametros_globales.json
 │   └── cookies_facebook.json

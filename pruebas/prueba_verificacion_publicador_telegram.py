@@ -1,7 +1,7 @@
 """
 ================================================================================
 ARCHIVO DE PRUEBA: pruebas/prueba_verificacion_publicador_telegram.py
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Script de verificación que prueba la instanciación del publicador de
              Telegram Web, el formateo de captions y la disponibilidad de los
              métodos de inyección de metadatos y Drag & Drop sintético.

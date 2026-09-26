@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase1_extraccion/padre_control_de_estados_txt.py
 JERARQUÍA: Padre  (Lógica de negocio — E/S de archivos de persistencia)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Administra de forma atómica toda la lectura y escritura en los
              archivos de texto plano (datos_persistencia/*.txt). Garantiza
              la estrategia Zero-RAM: ningún enlace se guarda en variables

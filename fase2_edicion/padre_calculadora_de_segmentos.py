@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase2_edicion/padre_calculadora_de_segmentos.py
 JERARQUÍA: Padre  (Lógica de negocio — cálculo matemático de puntos de corte)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Consulta la duración exacta de un video usando el binario ffprobe
              invocado como proceso hijo sin cargar píxeles en RAM. A partir de
              la duración, calcula los rangos de tiempo (inicio/fin) para dividir

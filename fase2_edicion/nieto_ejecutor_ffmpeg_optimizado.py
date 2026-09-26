@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase2_edicion/nieto_ejecutor_ffmpeg_optimizado.py
 JERARQUÍA: Nieto  (Ejecutor de bajo nivel — llamadas nativas a FFmpeg)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Ejecuta el binario FFmpeg como proceso hijo del SO mediante
              subprocess.Popen. Detecta automáticamente los encoders de
              hardware disponibles (NVENC > QSV > libx264 como CPU fallback),

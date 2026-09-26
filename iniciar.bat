@@ -1,9 +1,9 @@
 @echo off
-TITLE FaceDPeli — Instalador y Lanzador Automático
+TITLE Ragnarok — Instalador y Lanzador Automático
 COLOR 0A
 
 echo ============================================================
-echo   FaceDPeli — Instalador y Lanzador del Sistema
+echo   Ragnarok — Instalador y Lanzador del Sistema
 echo ============================================================
 echo.
 

@@ -442,7 +442,15 @@ body{font-family:var(--fn);background:var(--bg-base);color:var(--txt1);min-heigh
   padding: 20px;
   text-align: center;
   z-index: 2;
-  transition: opacity .3s ease;
+  cursor: pointer;
+  transition: opacity .3s ease, background .3s ease;
+}
+.estudio-poster:hover {
+  background: radial-gradient(circle at center, #16224c 0%, #0a0f20 100%);
+}
+.estudio-poster:hover .estudio-poster-ico {
+  transform: scale(1.1);
+  transition: transform .2s ease;
 }
 .estudio-poster-ico { font-size: 52px; opacity: .45; }
 .estudio-poster-title { font-size: 15px; font-weight: 700; color: var(--txt1); max-width: 80%; }

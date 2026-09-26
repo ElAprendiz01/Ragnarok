@@ -1,7 +1,7 @@
 """
 ================================================================================
 MÓDULO: fase3_publicacion/__init__.py
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Inicializador del paquete de la Fase 3 - Distribución, Publicación
              y Limpieza Cascade.
 ================================================================================

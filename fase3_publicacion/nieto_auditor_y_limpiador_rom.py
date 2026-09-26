@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase3_publicacion/nieto_auditor_y_limpiador_rom.py
 JERARQUÍA: Nieto  (Ejecutor de bajo nivel — auditoría y purga física de disco)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Encargado de la purga física y segura del almacenamiento ROM.
              Lee el archivo estado_publicaciones.txt, verifica que un clip
              haya sido publicado exitosamente en el 100% de las plataformas

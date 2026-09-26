@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase1_extraccion/nieto_auditor_de_duplicados.py
 JERARQUÍA: Nieto  (Ejecutor de bajo nivel — filtro y normalización de URLs)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Recibe lotes de URLs crudas obtenidas del DOM de Playwright,
              las normaliza al formato canónico de Facebook, elimina duplicados
              internos del lote mediante un set temporal en memoria (O(1) lookup,

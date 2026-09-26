@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FaceDPeli — Panel de Control</title>
-  <meta name="description" content="Panel de control FaceDPeli: extracción, edición y publicación multicanal de video." />
+  <title>Ragnarok — Panel de Control</title>
+  <meta name="description" content="Panel de control Ragnarok: extracción, edición y publicación multicanal de video." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -16,7 +16,7 @@
 
   <!-- ══════════════ SIDEBAR ══════════════ -->
   <aside class="sidebar">
-    <div class="logo" onclick="mostrarToast('success','FaceDPeli v1.0 — Sistema activo')">FP</div>
+    <div class="logo" onclick="mostrarToast('success','Ragnarok v1.0 — Sistema activo')">FP</div>
 
     <button class="nb active" id="nav-dash" onclick="navTo('dash',this)">🏠<span class="tip">Dashboard</span></button>
     <button class="nb" id="nav-estudio" onclick="navTo('estudio',this)">📺<span class="tip">Estudio Reproducción</span></button>
@@ -34,7 +34,7 @@
 
   <!-- ══════════════ TOPBAR ══════════════ -->
   <header class="topbar">
-    <div class="top-title">FaceDPeli — <span id="pg-title">Dashboard</span></div>
+    <div class="top-title">Ragnarok — <span id="pg-title">Dashboard</span></div>
     <div class="top-sp"></div>
     <!-- Indicador de servidor Python -->
     <div id="srv-indicator" class="srv-ind" title="Servidor Python en http://127.0.0.1:5757">
@@ -304,7 +304,7 @@
     </div><!-- /pg-dash -->
 
     <!-- ══ PÁGINA: MIS VIDEOS ══ -->
-    <div id="pg-videos" class="pg-hidden">
+    <div id="pg-videos" style="display:none">
       <div class="fu">
         <div class="sh">
           <span class="st">Biblioteca de Videos Descargados</span>
@@ -323,7 +323,7 @@
     </div>
 
     <!-- ══ PÁGINA: ESTUDIO DE REPRODUCCIÓN & EDICIÓN INTELIGENTE ══ -->
-    <div id="pg-estudio" class="pg-hidden">
+    <div id="pg-estudio" style="display:none">
       <div class="fu">
         <div class="sh">
           <div>
@@ -344,11 +344,12 @@
             <!-- Contenedor Inteligente del Reproductor -->
             <div class="estudio-player-card" id="estudio-player-box">
               <div class="estudio-video-viewport" id="estudio-viewport">
-                <video id="estudio-video" preload="metadata" playsinline></video>
-                <div id="estudio-poster" class="estudio-poster">
+                <video id="estudio-video" preload="none" playsinline></video>
+                <div id="estudio-poster" class="estudio-poster" onclick="estudioPosterClick()">
                   <div class="estudio-poster-ico">🎬</div>
                   <div class="estudio-poster-title" id="estudio-poster-title">Ningún video seleccionado</div>
-                  <div class="estudio-poster-sub">Haz clic en un video de la biblioteca lateral para reproducir y editar</div>
+                  <div class="estudio-poster-sub" id="estudio-poster-sub">Haz clic en un video de la biblioteca lateral para reproducir y editar</div>
+                  <button class="btn bp bsm" id="estudio-poster-play-btn" style="margin-top:10px;display:none" onclick="event.stopPropagation();estudioPosterClick()">▶ Reproducir Video</button>
                 </div>
                 <div class="estudio-badge-overlay" id="estudio-badge-overlay">
                   <span id="estudio-badge-estado" class="badge-pill">Sin video</span>
@@ -504,7 +505,7 @@
 
   <!-- Video -->
   <div id="pip-video-wrap">
-    <video id="pip-video" preload="metadata"></video>
+    <video id="pip-video" preload="none"></video>
     <div id="pip-poster">
       <div class="pip-empty-ico">🎬</div>
       <div class="pip-empty-txt">Selecciona un video de la<br>Biblioteca o de la Cola</div>
@@ -605,6 +606,90 @@
     </div>
     <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-vel')">Cancelar</button><button class="btn bp" onclick="aplicarVel()">✓ Aplicar</button></div>
   </div>
+</div>
+
+<!-- Modal de Publicación Directa del Video Activo -->
+<div class="mover" id="m-publicar-activo">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle" id="m-pub-titulo-hdr">✈️ Publicar Video Activo</div>
+      <button class="mclose" onclick="cerrarModal('m-publicar-activo')">✕</button>
+    </div>
+    <div class="mbody">
+      <p class="modal-desc">Confirma la publicación directa e individual de este video en la plataforma seleccionada.</p>
+      
+      <!-- Ficha de resumen del video -->
+      <div style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+        <div style="font-weight:700;font-size:13px;color:var(--txt1);margin-bottom:6px;word-break:break-word" id="m-pub-video-titulo">—</div>
+        <div class="meta-tech-row" style="margin:0;gap:6px">
+          <div class="tech-chip"><span class="tech-lbl">ID:</span> <span id="m-pub-video-id" class="tech-val">—</span></div>
+          <div class="tech-chip"><span class="tech-lbl">Duración:</span> <span id="m-pub-video-dur" class="tech-val">—</span></div>
+          <div class="tech-chip"><span class="tech-lbl">Tamaño:</span> <span id="m-pub-video-tam" class="tech-val">—</span></div>
+          <div class="tech-chip"><span class="tech-lbl">Estado:</span> <span id="m-pub-video-estado" class="tech-val">—</span></div>
+        </div>
+      </div>
+
+      <!-- Configuración del canal / destino (especialmente para Telegram) -->
+      <div class="fg" id="m-pub-grupo-canal">
+        <div class="flex-between" style="margin-bottom:4px">
+          <label class="fl" style="margin:0">Canal Objetivo (<span id="m-pub-plat-label">Telegram HD</span>)</label>
+          <span id="m-pub-canal-estado" style="font-size:11px;font-family:var(--mono);color:var(--cyan)"></span>
+        </div>
+
+        <!-- Selector desplegable cuando hay 2 o más canales guardados -->
+        <div id="m-pub-canales-dropdown-container" style="display:none;margin-bottom:6px">
+          <div style="font-size:11px;color:var(--txt2);margin-bottom:3px;font-weight:600">Elegir canal guardado:</div>
+          <select id="m-pub-canales-select" class="fsel" onchange="seleccionarCanalDeLista(this.value)">
+            <!-- Se puebla dinámicamente -->
+          </select>
+        </div>
+
+        <div style="display:flex;gap:6px">
+          <input type="text" id="m-pub-canal" class="fi" placeholder="Ingresa el canal (ej: @mi_canal o nombre_canal)" list="m-pub-canales-datalist" />
+          <datalist id="m-pub-canales-datalist"></datalist>
+          <button type="button" class="btn bs bsm" id="btn-guardar-canal-rapido" onclick="guardarCanalRapidoModal()" title="Guardar este canal en la lista">💾 Guardar</button>
+        </div>
+
+        <!-- Chips de selección rápida -->
+        <div id="m-pub-canales-chips-container" style="display:none;margin-top:6px">
+          <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center" id="m-pub-canales-chips">
+            <!-- Chips de canales -->
+          </div>
+        </div>
+
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px" id="m-pub-canal-hint">
+          Canal donde se publicará este video con su título y sinopsis. Si introduces varios canales, se guardarán para elegirlos cuando quieras.
+        </div>
+      </div>
+
+      <!-- Selección de modo: Video Completo HD vs Clips Segmentados -->
+      <div class="fg">
+        <label class="fl">Modo de Publicación</label>
+        <div class="flex-col-gap-8">
+          <label class="plci lbl-pointer">
+            <input type="radio" name="m-pub-modo" value="completo" checked class="accent-cyan">
+            <div>
+              <div class="vel-title">🎬 Video Completo Original (Full HD)</div>
+              <div class="vel-sub">Sube la película o video completo en alta definición directamente al canal.</div>
+            </div>
+          </label>
+          <label class="plci lbl-pointer">
+            <input type="radio" name="m-pub-modo" value="clips" class="accent-cyan">
+            <div>
+              <div class="vel-title">✂️ Segmentos / Clips Procesados (Fase 2)</div>
+              <div class="vel-sub">Sube los fragmentos divididos en partes con sus marcas de tiempo y numeración.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModal('m-publicar-activo')">Cancelar</button>
+      <button class="btn bp btn-telegram" id="m-pub-btn-confirmar" onclick="confirmarPublicacionDirecta()">🚀 Confirmar y Publicar Ahora</button>
+    </div>
+  </div>
+</div>
+
 <div class="mover" id="m-telegram-manual">
   <div class="modal">
     <div class="mhdr"><div class="mtitle">✈️ Selección Manual de Videos para Telegram Web</div><button class="mclose" onclick="cerrarModal('m-telegram-manual')">✕</button></div>

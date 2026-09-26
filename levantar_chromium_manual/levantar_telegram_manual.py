@@ -1,7 +1,7 @@
 """
 ================================================================================
 ARCHIVO: levantar_chromium_manual/levantar_telegram_manual.py
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Script de ejecución manual para iniciar Chromium visible utilizando
              el perfil persistente de Telegram Web (datos_persistencia/perfil_telegram).
              Mantiene la ventana abierta para inspección manual y cierra de forma
@@ -47,7 +47,7 @@ async def ejecutar_navegador_manual() -> None:
     DIR_PERFIL.mkdir(parents=True, exist_ok=True)
 
     print("=" * 60)
-    print("  FaceDPeli — Navegador Manual de Telegram Web")
+    print("  Ragnarok — Navegador Manual de Telegram Web")
     print(f"  Perfil: {DIR_PERFIL}")
     print("  Instrucciones: Presiona Ctrl + C en la consola para cerrar limpiamente.")
     print("=" * 60)

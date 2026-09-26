@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase3_publicacion/orquestador_publicaciones_principal.py
 JERARQUÍA: Orquestador  (Punto de entrada de la Fase 3 — Sin lógica pesada)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Punto de entrada de la Fase 3: Publicación & Limpieza Cascade.
              Escanea las carpetas de 'procesados/', verifica el estado contra
              estado_publicaciones.txt, delega la publicación a los publicadores
@@ -71,7 +71,7 @@ class OrquestadorPublicacionesPrincipal:
     async def ejecutar_fase_3(self, plataforma_filtro: Optional[str] = None) -> None:
         """Ejecuta el pipeline completo de publicación y limpieza (o filtrado por plataforma)."""
         self._log("==========================================================")
-        self._log("  FACEDPELI — FASE 3: PUBLICACIÓN & LIMPIEZA CASCADE")
+        self._log("  Ragnarok — FASE 3: PUBLICACIÓN & LIMPIEZA CASCADE")
         if plataforma_filtro:
             self._log(f"  Filtro de plataforma única activo: {plataforma_filtro.upper()}")
         self._log("==========================================================")

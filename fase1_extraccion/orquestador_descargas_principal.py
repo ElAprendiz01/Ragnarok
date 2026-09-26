@@ -2,7 +2,7 @@
 ================================================================================
 MÓDULO: fase1_extraccion/orquestador_descargas_principal.py
 JERARQUÍA: Orquestador  (Punto de entrada de la Fase 1 — Sin lógica interna pesada)
-PROYECTO: FaceDPeli
+PROYECTO: Ragnarok
 DESCRIPCIÓN: Punto de entrada de la Fase 1: Extracción & Descarga. Coordina
              los tres módulos subordinados (padre_control_de_estados_txt,
              nieto_gestor_scroll_dinamico, nieto_auditor_de_duplicados) y
@@ -80,7 +80,7 @@ class OrquestadorDescargasPrincipal:
         de scraping de fuentes activas (si solo_descargar=False), filtrado y descarga.
         """
         print("\n" + "="*60)
-        print("  FACEDPELI — FASE 1: EXTRACCIÓN & DESCARGA")
+        print("  Ragnarok — FASE 1: EXTRACCIÓN & DESCARGA")
         print("="*60 + "\n")
 
         # Paso 1: Inicializar persistencia

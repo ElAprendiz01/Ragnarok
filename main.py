@@ -1,8 +1,8 @@
 """
 ================================================================================
 ARCHIVO: main.py
-PROYECTO: FaceDPeli
-DESCRIPCIÓN: Punto de entrada global del sistema FaceDPeli.
+PROYECTO: Ragnarok
+DESCRIPCIÓN: Punto de entrada global del sistema Ragnarok.
              Permite ejecutar el pipeline completo (Fase 1 -> Fase 2 -> Fase 3)
              o fases individuales mediante argumentos de línea de comandos.
 
@@ -37,7 +37,7 @@ RUTA_CONFIG: str = "config/parametros_globales.json"
 
 BANNER = """
 ╔══════════════════════════════════════════════════════════╗
-║          FaceDPeli — Sistema de Distribución de Video    ║
+║          Ragnarok — Sistema de Distribución de Video    ║
 ║      Extracción • Edición • Publicación Automática       ║
 ╚══════════════════════════════════════════════════════════╝
 """
@@ -64,7 +64,7 @@ async def ejecutar_fase_3(plataforma: Optional[str] = None) -> None:
 async def ejecutar_pipeline_completo() -> None:
     """Ejecuta las tres fases en secuencia completa."""
     print(BANNER)
-    print("[MAIN] Iniciando pipeline completo FaceDPeli...\n")
+    print("[MAIN] Iniciando pipeline completo Ragnarok...\n")
     await ejecutar_fase_1()
     print("\n" + "—"*60 + "\n")
     ejecutar_fase_2()
@@ -76,8 +76,8 @@ async def ejecutar_pipeline_completo() -> None:
 def construir_parser() -> argparse.ArgumentParser:
     """Construye el parser de argumentos de línea de comandos."""
     parser = argparse.ArgumentParser(
-        prog="facedpeli",
-        description="FaceDPeli — Pipeline automatizado de distribución de video.",
+        prog="Ragnarok",
+        description="Ragnarok — Pipeline automatizado de distribución de video.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos de uso:
