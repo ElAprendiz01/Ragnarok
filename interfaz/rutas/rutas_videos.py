@@ -40,6 +40,11 @@ def listar_videos_reales():
     dir_descargas = RAIZ / "descargas"
     dir_procesados = RAIZ / "procesados"
     videos = []
+    try:
+        from fase3_publicacion.gestor_memoria_publicaciones import GestorMemoriaPublicaciones
+        ids_pub_tg = GestorMemoriaPublicaciones().obtener_ids_publicados("telegram")
+    except Exception:
+        ids_pub_tg = set()
 
     # 1. Escanear descargas/
     if dir_descargas.exists():
@@ -92,6 +97,7 @@ def listar_videos_reales():
                         "durSec": dur_seg,
                         "tamano": tam_mb,
                         "estado": "editado" if lista_clips else "descargado",
+                        "publicado_telegram": carpeta_video.name in ids_pub_tg,
                         "partes": len(lista_clips) if lista_clips else 1,
                         "clips": lista_clips,
                         "url_stream": f"/media/descargas/{carpeta_video.name}/{ruta_video.name}",
@@ -140,6 +146,7 @@ def listar_videos_reales():
                         "durSec": dur_seg,
                         "tamano": tam_mb,
                         "estado": "editado",
+                        "publicado_telegram": carpeta_video.name in ids_pub_tg,
                         "partes": len(clips),
                         "clips": lista_clips_p,
                         "url_stream": f"/media/procesados/{carpeta_video.name}/{clips[0].name}",
@@ -161,43 +168,26 @@ def actualizar_metadata_video(id_video: str):
     if not nuevo_titulo and not nueva_desc:
         return jsonify({"ok": False, "error": "Debe proporcionar título o descripción."}), 400
 
-    actualizado = False
     ruta_meta_descarga = RAIZ / "descargas" / id_video / "metadata.json"
     ruta_meta_procesado = RAIZ / "procesados" / id_video / "metadata_segmentada.json"
 
-    # 1. Actualizar en descargas/
-    if ruta_meta_descarga.exists():
+    def _actualizar_json(ruta_p):
+        if not ruta_p.exists():
+            return False
         try:
-            with open(ruta_meta_descarga, "r", encoding="utf-8") as f:
-                meta = json.load(f)
+            with open(ruta_p, "r", encoding="utf-8") as f:
+                m = json.load(f)
             if nuevo_titulo:
-                meta["titulo"] = nuevo_titulo
-                meta["titulo_original"] = nuevo_titulo
+                m["titulo"] = m["titulo_original"] = nuevo_titulo
             if nueva_desc is not None:
-                meta["descripcion"] = nueva_desc
-                meta["descripcion_original"] = nueva_desc
-            with open(ruta_meta_descarga, "w", encoding="utf-8") as f:
-                json.dump(meta, f, ensure_ascii=False, indent=2)
-            actualizado = True
-        except Exception as e:
-            return jsonify({"ok": False, "error": f"Error al guardar en descargas: {e}"}), 500
-
-    # 2. Actualizar en procesados/ si existe
-    if ruta_meta_procesado.exists():
-        try:
-            with open(ruta_meta_procesado, "r", encoding="utf-8") as f:
-                meta_seg = json.load(f)
-            if nuevo_titulo:
-                meta_seg["titulo"] = nuevo_titulo
-                meta_seg["titulo_original"] = nuevo_titulo
-            if nueva_desc is not None:
-                meta_seg["descripcion"] = nueva_desc
-                meta_seg["descripcion_original"] = nueva_desc
-            with open(ruta_meta_procesado, "w", encoding="utf-8") as f:
-                json.dump(meta_seg, f, ensure_ascii=False, indent=2)
-            actualizado = True
+                m["descripcion"] = m["descripcion_original"] = nueva_desc
+            with open(ruta_p, "w", encoding="utf-8") as f:
+                json.dump(m, f, ensure_ascii=False, indent=2)
+            return True
         except Exception:
-            pass
+            return False
+
+    actualizado = _actualizar_json(ruta_meta_descarga) or _actualizar_json(ruta_meta_procesado)
 
     if actualizado:
         _CACHE_VIDEOS["datos"] = None
@@ -284,7 +274,11 @@ def eliminar_video_endpoint(id_video: str):
 
     if eliminado:
         _CACHE_VIDEOS["datos"] = None
+        try:
+            from fase3_publicacion.gestor_memoria_publicaciones import GestorMemoriaPublicaciones
+            GestorMemoriaPublicaciones().eliminar_registro(id_limpio)
+        except Exception:
+            pass
         escribir_log("WARN", f"Video {id_limpio}, clips y metadata.json eliminados de disco.")
         return jsonify({"ok": True, "id": id_limpio, "mensaje": "Video y metadata JSON eliminados permanentemente."})
-    else:
-        return jsonify({"ok": False, "error": f"No se encontro el video {id_limpio} en disco."}), 404
+    return jsonify({"ok": False, "error": f"No se encontro el video {id_limpio} en disco."}), 404

@@ -32,6 +32,7 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from fase3_publicacion.nieto_auditor_y_limpiador_rom import NietoAuditorYLimpiadorROM
+from fase3_publicacion.gestor_memoria_publicaciones import GestorMemoriaPublicaciones
 
 
 class OrquestadorPublicacionLotes:
@@ -44,6 +45,7 @@ class OrquestadorPublicacionLotes:
         modo_browser: str = "visible",
         modo_video: str = "completo",
         pausa_seg: int = 5,
+        forzar: bool = False,
     ) -> None:
         self._ruta_base = RAIZ
         self._config = self._cargar_config(ruta_config)
@@ -51,11 +53,13 @@ class OrquestadorPublicacionLotes:
         self._modo_browser = "headless" if modo_browser in ["headless", "invisible"] else "visible"
         self._modo_video = "clips" if modo_video == "clips" else "completo"
         self._pausa_seg = max(2, int(pausa_seg))
+        self._forzar = bool(forzar)
         self._dir_descargas = self._ruta_base / "descargas"
         self._dir_procesados = self._ruta_base / "procesados"
         self._ruta_cola = self._ruta_base / "datos_persistencia" / "cola_publicacion_telegram.json"
         self._ruta_log = self._ruta_base / "datos_persistencia" / "log_tiempo_real.txt"
         self._ruta_estado = self._ruta_base / "datos_persistencia" / "estado_publicaciones.txt"
+        self._memoria = GestorMemoriaPublicaciones(ruta_base=self._ruta_base)
         self._auditor = NietoAuditorYLimpiadorROM(
             ruta_estado_publicaciones=str(self._ruta_estado.relative_to(self._ruta_base)),
             plataformas_requeridas=["telegram"],
@@ -93,16 +97,7 @@ class OrquestadorPublicacionLotes:
         elementos = []
         ids_set = set(ids_filtro) if ids_filtro else None
 
-        completados_previos = set()
-        if self._ruta_cola.exists():
-            try:
-                with open(self._ruta_cola, "r", encoding="utf-8") as f:
-                    cola_data = json.load(f)
-                    for e in cola_data.get("elementos", []):
-                        if e.get("estado") == "COMPLETADO":
-                            completados_previos.add(e.get("id_video"))
-            except Exception:
-                pass
+        completados_previos = self._memoria.obtener_ids_publicados("telegram") if not self._forzar else set()
 
         if self._modo_video == "completo" and self._dir_descargas.exists():
             carpetas = sorted([d for d in self._dir_descargas.iterdir() if d.is_dir()], key=lambda d: d.name)
@@ -255,6 +250,7 @@ class OrquestadorPublicacionLotes:
                 item["estado"] = "COMPLETADO"
                 clip_id = f"{id_vid}_{Path(item['ruta_video']).stem}"
                 self._auditor.marcar_plataforma_completada(clip_id, "telegram")
+                self._memoria.registrar_publicacion(id_vid, "telegram", "lote", self._canal, self._modo_video, titulo, item["ruta_video"])
                 self._log("OK", f"(Video {idx}/{total}) Confirmado y publicado en {self._canal}.")
             else:
                 fallidos += 1
@@ -279,6 +275,7 @@ def main():
     parser.add_argument("--modo-video", type=str, default="completo", choices=["completo", "clips"])
     parser.add_argument("--ids", nargs="*", default=None, help="Lista opcional de IDs de videos")
     parser.add_argument("--pausa", type=int, default=5, help="Pausa en segundos entre videos")
+    parser.add_argument("--forzar", action="store_true", help="Ignorar historial previo y forzar subida total")
     args = parser.parse_args()
 
     orq = OrquestadorPublicacionLotes(
@@ -286,6 +283,7 @@ def main():
         modo_browser=args.modo_browser,
         modo_video=args.modo_video,
         pausa_seg=args.pausa,
+        forzar=args.forzar,
     )
     exito = asyncio.run(orq.ejecutar_lote(ids_filtro=args.ids))
     sys.exit(0 if exito else 1)

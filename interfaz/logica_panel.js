@@ -428,7 +428,9 @@ function abrirModalTelegramLotes() {
   const elCant = document.getElementById('m-tg-lote-cant-videos');
   if (elCant) {
     const total = (App.galeria && App.galeria.length) || 0;
-    elCant.textContent = `${total} video(s) disponibles`;
+    const yaSubidos = (App.galeria && App.galeria.filter(v => v.publicado_telegram).length) || 0;
+    const pendientes = Math.max(0, total - yaSubidos);
+    elCant.textContent = `${total} en disco (${yaSubidos} ya en Telegram, ${pendientes} pendientes)`;
   }
   abrirModal('m-telegram-lotes');
 }
@@ -496,10 +498,11 @@ async function iniciarPublicacionLoteTelegram() {
   }
   const modoBrowser = document.getElementById('m-tg-lote-browser')?.value || 'visible';
   const modoVideo = document.getElementById('m-tg-lote-modo-video')?.value || 'completo';
+  const forzar = document.getElementById('m-tg-lote-forzar')?.checked || false;
 
   cerrarModal('m-telegram-lotes');
-  mostrarToast('info', `Iniciando publicación en lote para ${canal} (${modoBrowser.toUpperCase()})...`);
-  addLog('info', `Iniciando cola por lotes Telegram hacia <span class="hl">${escapeHtml(canal)}</span> (Modo: ${modoVideo}, Ventana: ${modoBrowser}).`);
+  mostrarToast('info', `Iniciando publicación en lote para ${canal} (${modoBrowser.toUpperCase()}${forzar ? ' - REINICIO TOTAL' : ''})...`);
+  addLog('info', `Iniciando cola por lotes Telegram hacia <span class="hl">${escapeHtml(canal)}</span> (Modo: ${modoVideo}, Ventana: ${modoBrowser}${forzar ? ', Forzar: SI' : ''}).`);
 
   App.fases[4] = 'running';
   setFaseUI(4, 'running', 'Procesando cola en disco (Telegram)...');
@@ -513,7 +516,8 @@ async function iniciarPublicacionLoteTelegram() {
       body: JSON.stringify({
         canal: canal,
         modo_browser: modoBrowser,
-        modo_video: modoVideo
+        modo_video: modoVideo,
+        forzar: forzar
       })
     });
     const data = await res.json();
@@ -781,8 +785,9 @@ function renderGaleria(lista) {
     return;
   }
   grid.innerHTML = lista.map((v,i) => {
-    const b = estadoBadge[v.estado] || estadoBadge.descargado;
-    const isNew = i < 2;
+    const estadoReal = v.publicado_telegram ? 'publicado' : v.estado;
+    const b = estadoBadge[estadoReal] || estadoBadge.descargado;
+    const isNew = i < 2 && !v.publicado_telegram;
     const tituloEsc = escapeHtml(v.titulo);
     return `
     <div class="gv-card" onclick="abrirEnEstudio(${i})" title="Reproducir y editar: ${tituloEsc}">

@@ -193,6 +193,7 @@ def ejecutar_lote_telegram_endpoint():
     canal = str(data.get("canal", "")).strip()
     modo_browser = str(data.get("modo_browser", "visible")).strip().lower()
     modo_video = str(data.get("modo_video", "completo")).strip().lower()
+    forzar = bool(data.get("forzar", False))
     ids_videos = data.get("ids", [])
 
     if canal:
@@ -211,6 +212,8 @@ def ejecutar_lote_telegram_endpoint():
                 "--modo-browser", modo_browser,
                 "--modo-video", modo_video,
             ]
+            if forzar:
+                cmd.append("--forzar")
             if ids_videos and isinstance(ids_videos, list):
                 cmd.extend(["--ids"] + [str(i) for i in ids_videos])
 
@@ -248,4 +251,27 @@ def obtener_estado_lote_telegram():
         return jsonify({"ok": True, "activo": Estado["fases"]["4"] == "running", **datos})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@bp_publicacion.route("/api/publicar/memoria", methods=["GET"])
+def obtener_memoria_publicaciones():
+    """Retorna el estado consolidado de la memoria unificada de publicaciones."""
+    from fase3_publicacion.gestor_memoria_publicaciones import GestorMemoriaPublicaciones
+    mem = GestorMemoriaPublicaciones()
+    ids_tg = list(mem.obtener_ids_publicados("telegram"))
+    return jsonify({
+        "ok": True,
+        "total_publicados_telegram": len(ids_tg),
+        "ids_telegram": ids_tg,
+        "memoria": mem._cargar_memoria(),
+    })
+
+
+@bp_publicacion.route("/api/publicar/memoria/limpiar", methods=["POST"])
+def limpiar_memoria_publicaciones():
+    """Limpia la memoria unificada de publicaciones para reiniciar desde cero."""
+    from fase3_publicacion.gestor_memoria_publicaciones import GestorMemoriaPublicaciones
+    mem = GestorMemoriaPublicaciones()
+    mem.limpiar_memoria()
+    return jsonify({"ok": True, "mensaje": "Memoria de publicaciones reiniciada correctamente."})
 

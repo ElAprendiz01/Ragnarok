@@ -42,13 +42,11 @@ from fase3_publicacion.padre_publicador_tiktok import PadrePublicadorTikTok
 from fase3_publicacion.padre_publicador_facebook import PadrePublicadorFacebook
 from fase3_publicacion.padre_publicador_instagram import PadrePublicadorInstagram
 from fase3_publicacion.nieto_auditor_y_limpiador_rom import NietoAuditorYLimpiadorROM
+from fase3_publicacion.gestor_memoria_publicaciones import GestorMemoriaPublicaciones
 
 
 class OrquestadorPublicacionIndividual:
-    """
-    Orquesta la publicación directa y bajo demanda de un video específico
-    hacia la plataforma seleccionada (con soporte preferente y maduro para Telegram Web HD).
-    """
+    """Orquesta la publicación directa y bajo demanda de un video específico."""
 
     def __init__(
         self,
@@ -75,6 +73,7 @@ class OrquestadorPublicacionIndividual:
         # Submódulos reutilizados
         self._inyector = HijoInyectorDeMetadatosYCarga()
         self._multiplex = AbueloGestorPlataformasMultiplex(headless=self._headless)
+        self._memoria = GestorMemoriaPublicaciones(ruta_base=self._ruta_base)
         self._auditor = NietoAuditorYLimpiadorROM(
             ruta_estado_publicaciones=str(self._ruta_estado.relative_to(self._ruta_base)),
             plataformas_requeridas=[self._config_pub.get("plataformas_activas", ["telegram"])[0]],
@@ -200,6 +199,8 @@ class OrquestadorPublicacionIndividual:
             await self._multiplex.cerrar_todo()
 
         if exito_global:
+            r_vid = str(archivos[0][0]) if archivos else ""
+            self._memoria.registrar_publicacion(id_video, plataforma, "manual", canal_target or "", modo, titulo, r_vid)
             self._log("OK", f"Publicación directa de '{titulo}' en {plataforma.upper()} finalizada con éxito.")
         else:
             self._log("WARN", f"Publicación directa completada con observaciones o errores.")

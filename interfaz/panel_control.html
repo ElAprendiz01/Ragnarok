@@ -811,6 +811,17 @@
           Arquitectura Zero-RAM: Los videos no se cargan simultáneamente en memoria; se procesan de forma atómica y pausada con supervisión activa de DOM.
         </div>
       </div>
+
+      <!-- Control de Resubida o Reanudación -->
+      <div class="fg" style="margin-top:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--txt2);user-select:none">
+          <input type="checkbox" id="m-tg-lote-forzar" style="accent-color:var(--cyan);cursor:pointer" />
+          <span><strong>Forzar resubida completa</strong> (Ignorar completados y subir de nuevo)</span>
+        </label>
+        <div style="font-size:11px;color:var(--txt3);margin-top:3px;margin-left:22px">
+          Desmarcado por defecto: Reanuda automáticamente solo videos pendientes o fallidos, evitando duplicados en Telegram.
+        </div>
+      </div>
     </div>
     <div class="mfoot">
       <button class="btn bs" onclick="cerrarModal('m-telegram-lotes')">Cancelar</button>
