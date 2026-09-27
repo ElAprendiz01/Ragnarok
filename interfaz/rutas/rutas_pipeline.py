@@ -129,7 +129,10 @@ def ejecutar_fase(fase: int):
         nombre_fase = "Telegram HD Directo" if fase == 4 else f"Fase {fase}"
         escribir_log("INFO", f"{nombre_fase} iniciada desde el Panel de Control.")
         try:
-            cmd = [sys.executable, str(RAIZ / "main.py"), "--fase", "3", "--plataforma", "telegram"] if fase == 4 else [sys.executable, str(RAIZ / "main.py"), "--fase", str_fase]
+            if fase == 4:
+                cmd = [sys.executable, "-m", "fase3_publicacion.orquestador_publicacion_lotes"]
+            else:
+                cmd = [sys.executable, str(RAIZ / "main.py"), "--fase", str_fase]
             proc = subprocess.Popen(cmd, cwd=str(RAIZ))
             Estado["procesos"][str_fase] = proc
             returncode = proc.wait()

@@ -145,17 +145,7 @@ class HijoInyectorDeMetadatosYCarga:
         self, pagina: Page,
         selector_boton: str = "button:has-text('Publicar'), button:has-text('Publish'), button:has-text('Post')"
     ) -> bool:
-        """
-        Hace clic en el botón de publicar del portal de la plataforma.
-        Usa texto del botón como selector para resistir cambios de clases CSS.
-
-        Args:
-            pagina:          Página del portal de publicación.
-            selector_boton:  Selector del botón de publicar.
-
-        Returns:
-            True si se hizo clic exitosamente.
-        """
+        """Hace clic en el botón final de publicación."""
         try:
             boton = pagina.locator(selector_boton).first
             await boton.click(timeout=self.TIMEOUT_CAMPO_MS)
@@ -189,7 +179,7 @@ class HijoInyectorDeMetadatosYCarga:
                 timeout=timeout_ms,
                 state="visible"
             )
-            print("[INYECTOR] [✓] Confirmación visual de publicación detectada.")
+            print("[INYECTOR] [OK] Confirmación visual de publicación detectada.")
             return True
         except Exception:
             print("[INYECTOR] [!] No se detectó confirmación visual dentro del timeout.")

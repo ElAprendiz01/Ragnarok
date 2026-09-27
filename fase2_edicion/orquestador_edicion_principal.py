@@ -13,6 +13,8 @@ LÍNEAS DE CÓDIGO: < 300 (Regla de Responsabilidad Única)
 """
 
 import json
+import os
+import shutil
 from pathlib import Path
 from typing import List, Tuple
 
@@ -93,7 +95,7 @@ class OrquestadorEdicionPrincipal:
             self._log(f"[ORQ] Iniciando edición de video: {id_video}")
             self._procesar_video_completo(id_video, url)
 
-        self._log("[ORQ] ✓ Fase 2 completada exitosamente.")
+        self._log("[ORQ] [OK] Fase 2 completada exitosamente.")
 
     def _log(self, mensaje: str) -> None:
         """Escribe en consola y en log_tiempo_real.txt para la UI SSE."""
@@ -104,7 +106,7 @@ class OrquestadorEdicionPrincipal:
             nivel = "ERROR"
         elif "!" in mensaje or "ADVERTENCIA" in mensaje:
             nivel = "WARN"
-        elif "✓" in mensaje or "exitos" in mensaje.lower():
+        elif "[OK]" in mensaje or "exitos" in mensaje.lower():
             nivel = "OK"
 
         print(f"{estampa}  {mensaje}")
@@ -120,42 +122,56 @@ class OrquestadorEdicionPrincipal:
     # PROCESAMIENTO DE UN VIDEO
     # ------------------------------------------------------------------
 
-    def _procesar_video_completo(self, id_video: str, url: str) -> None:
+    def _procesar_video_completo(
+        self,
+        id_video: str,
+        url: str = "",
+        purgar_original: bool = False,
+        duracion_bloque: float = None,
+        factor_velocidad: float = None,
+    ) -> bool:
         """
         Ejecuta el flujo completo de edición para un único video:
-        crea carpeta, calcula segmentos, ejecuta cortes y valida integridad.
-
-        Args:
-            id_video: ID único del video.
-            url:      URL original del video.
+        crea carpetas, calcula segmentos, ejecuta cortes y valida integridad.
+        Espeja los clips en descargas/<id_video>/clips/ para acceso local directo.
         """
         ruta_video_original = self._dir_descargas / id_video / "video_original.mp4"
         ruta_metadata_original = self._dir_descargas / id_video / "metadata.json"
 
         if not ruta_video_original.exists():
-            print(f"  [!] Video original no encontrado: {ruta_video_original}")
-            return
+            self._log(f"[WARN] Video original no encontrado: {ruta_video_original}")
+            return False
 
-        # Cargar metadata original
         metadata = self._cargar_metadata_json(ruta_metadata_original)
         titulo = metadata.get("titulo_original", f"video_{id_video}")
 
-        # Paso 1: Crear carpeta de destino
+        # Carpetas de destino: procesados/<id> y descargas/<id>/clips/
         dir_video_procesado = self._gestor_carpetas.crear_carpeta_video(id_video)
+        dir_clips_descargas = self._dir_descargas / id_video / "clips"
+        dir_clips_descargas.mkdir(parents=True, exist_ok=True)
 
-        # Paso 2: Calcular segmentos
-        rangos = self._calculadora.calcular_segmentos_para_video(ruta_video_original)
+        # Calculadora y procesador configurables
+        calculadora = self._calculadora
+        if duracion_bloque and duracion_bloque > 0:
+            remanente = min(15, int(duracion_bloque) // 4) if duracion_bloque < 60 else 60
+            calculadora = PadreCalculadoraDeSegmentos(int(duracion_bloque), remanente)
+
+        procesador_vel = self._procesador_velocidad
+        if factor_velocidad and factor_velocidad > 0:
+            procesador_vel = HijoProcesadorDeVelocidad(
+                factor_velocidad=factor_velocidad,
+                encoder_preferido=self._config.get("edicion", {}).get("encoder_preferido", "auto"),
+                threads=self._config.get("edicion", {}).get("threads_ffmpeg", 4),
+            )
+
+        rangos = calculadora.calcular_segmentos_para_video(ruta_video_original)
         if not rangos:
-            print(f"  [!] No se pudieron calcular segmentos para: {id_video}")
-            if self._gestor_carpetas.carpeta_esta_vacia_de_clips(dir_video_procesado):
-                self._gestor_carpetas.eliminar_carpeta_raiz_video(dir_video_procesado)
-            return
+            self._log(f"[WARN] No se pudieron calcular segmentos para: {id_video}")
+            return False
 
-        # Paso 3: Obtener flags de FFmpeg
         encoder = self._ejecutor_ffmpeg.obtener_encoder_disponible()
-        flags_ffmpeg = self._procesador_velocidad.obtener_flags_ffmpeg(encoder)
+        flags_ffmpeg = procesador_vel.obtener_flags_ffmpeg(encoder)
 
-        # Paso 4: Ejecutar cortes
         clips_generados: List[Tuple[Path, float]] = []
         todos_exitosos = True
         for rango in rangos:
@@ -171,31 +187,28 @@ class OrquestadorEdicionPrincipal:
             )
             if exito:
                 clips_generados.append((ruta_clip, rango["duracion_segundos"]))
+                self._espejar_archivo_cero_copia(ruta_clip, dir_clips_descargas / ruta_clip.name)
             else:
                 todos_exitosos = False
-                print(f"  [✗] Fallo al generar Parte {rango['numero_parte']} de {id_video}")
+                self._log(f"[ERROR] Fallo al generar Parte {rango['numero_parte']} de {id_video}")
 
-        # Paso 5: Validar integridad de clips
-        if clips_generados:
-            integridad_ok = self._ejecutor_ffmpeg.verificar_integridad_todos_los_clips(clips_generados)
-        else:
-            integridad_ok = False
+        integridad_ok = self._ejecutor_ffmpeg.verificar_integridad_todos_los_clips(clips_generados) if clips_generados else False
 
-        # Paso 6: Escribir metadata segmentada
         self._gestor_carpetas.escribir_metadata_segmentada(
-            dir_video_procesado, metadata, rangos,
-            self._procesador_velocidad.obtener_factor()
+            dir_video_procesado, metadata, rangos, procesador_vel.obtener_factor()
+        )
+        self._espejar_archivo_cero_copia(
+            dir_video_procesado / "metadata_segmentada.json",
+            dir_clips_descargas / "metadata_segmentada.json"
         )
 
-        # Paso 7: Garbage Collection del video original (sólo si todo fue exitoso)
-        if todos_exitosos and integridad_ok:
-            print(f"\n  [GC] Todos los clips válidos. Eliminando video original pesado...")
+        if purgar_original and todos_exitosos and integridad_ok:
+            self._log(f"[GC] Purgando video original por configuracion activa...")
             self._gestor_carpetas.eliminar_video_original_pesado(ruta_video_original)
         else:
-            print(f"\n  [!] Algunos clips fallaron. Video original retenido para reintento.")
-            if self._gestor_carpetas.carpeta_esta_vacia_de_clips(dir_video_procesado):
-                print(f"  [GC] Carpeta de procesado vacía. Limpiando directorio del video...")
-                self._gestor_carpetas.eliminar_carpeta_raiz_video(dir_video_procesado)
+            self._log(f"[INFO] Video original preservado intacto para publicacion completa.")
+
+        return todos_exitosos and integridad_ok
 
     # ------------------------------------------------------------------
     # LECTURA DE COLA DE COMPLETADOS
@@ -242,6 +255,19 @@ class OrquestadorEdicionPrincipal:
             return {}
         with open(ruta_abs, "r", encoding="utf-8") as archivo:
             return json.load(archivo)
+
+    @staticmethod
+    def _espejar_archivo_cero_copia(origen: Path, destino: Path) -> None:
+        """Enlaza mediante hardlink NTFS (0 bytes extra en ROM, 0ms I/O) o copia si falla."""
+        try:
+            if destino.exists():
+                destino.unlink()
+            os.link(origen, destino)
+        except Exception:
+            try:
+                shutil.copy2(origen, destino)
+            except Exception:
+                pass
 
 
 # ------------------------------------------------------------------

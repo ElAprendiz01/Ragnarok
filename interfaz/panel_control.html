@@ -16,19 +16,19 @@
 
   <!-- ══════════════ SIDEBAR ══════════════ -->
   <aside class="sidebar">
-    <div class="logo" onclick="mostrarToast('success','Ragnarok v1.0 — Sistema activo')">FP</div>
+    <div class="logo" onclick="mostrarToast('success','Ragnarok v1.0 — Sistema activo')">R</div>
 
-    <button class="nb active" id="nav-dash" onclick="navTo('dash',this)">🏠<span class="tip">Dashboard</span></button>
-    <button class="nb" id="nav-estudio" onclick="navTo('estudio',this)">📺<span class="tip">Estudio Reproducción</span></button>
-    <button class="nb" id="nav-videos" onclick="navTo('videos',this)">🎬<span class="tip">Mis Videos</span><span class="dot-badge"></span></button>
-    <button class="nb" id="nav-fases" onclick="navTo('fases',this)">⚙️<span class="tip">Control Fases</span></button>
-    <button class="nb" id="nav-sched" onclick="navTo('sched',this)">📅<span class="tip">Programación</span></button>
-    <button class="nb" id="nav-plat" onclick="navTo('plat',this)">🌐<span class="tip">Plataformas</span></button>
+    <button class="nb active" id="nav-dash" onclick="navTo('dash',this)"><img src="iconos/dashboard.svg" class="icono-nav" alt="Dashboard" /><span class="tip">Dashboard</span></button>
+    <button class="nb" id="nav-estudio" onclick="navTo('estudio',this)"><img src="iconos/estudio.svg" class="icono-nav" alt="Estudio" /><span class="tip">Estudio Reproducción</span></button>
+    <button class="nb" id="nav-videos" onclick="navTo('videos',this)"><img src="iconos/videos.svg" class="icono-nav" alt="Videos" /><span class="tip">Mis Videos</span><span class="dot-badge"></span></button>
+    <button class="nb" id="nav-fases" onclick="navTo('fases',this)"><img src="iconos/fases.svg" class="icono-nav" alt="Control Fases" /><span class="tip">Control Fases</span></button>
+    <button class="nb" id="nav-sched" onclick="navTo('sched',this)"><img src="iconos/programar.svg" class="icono-nav" alt="Programación" /><span class="tip">Programación</span></button>
+    <button class="nb" id="nav-plat" onclick="navTo('plat',this)"><img src="iconos/plataformas.svg" class="icono-nav" alt="Plataformas" /><span class="tip">Plataformas</span></button>
 
     <div class="nav-sep"></div>
 
     <div class="sb-bot">
-      <button class="nb" onclick="abrirConfig()">🔧<span class="tip">Configuración</span></button>
+      <button class="nb" onclick="abrirConfig()"><img src="iconos/config.svg" class="icono-nav" alt="Configuración" /><span class="tip">Configuración</span></button>
     </div>
   </aside>
 
@@ -42,9 +42,9 @@
       <span id="srv-txt">Sin Servidor Python</span>
     </div>
     <span id="sys-badge" class="sbadge idle"><span class="sdot" id="sys-dot"></span><span id="sys-txt">Sistema inactivo</span></span>
-    <button class="bico" title="Refrescar" onclick="refrescar()">🔄</button>
-    <button class="bico" title="Estudio de Reproducción" onclick="navTo('estudio',document.getElementById('nav-estudio'))">📺</button>
-    <button class="bico" title="Logs" onclick="navTo('dash',document.getElementById('nav-dash'))">📄</button>
+    <button class="bico" title="Refrescar" onclick="refrescar()"><img src="iconos/refrescar.svg" class="icono-svg" alt="Refrescar" /></button>
+    <button class="bico" title="Estudio de Reproducción" onclick="navTo('estudio',document.getElementById('nav-estudio'))"><img src="iconos/estudio.svg" class="icono-svg" alt="Estudio" /></button>
+    <button class="bico" title="Logs" onclick="navTo('dash',document.getElementById('nav-dash'))"><img src="iconos/logs.svg" class="icono-svg" alt="Logs" /></button>
   </header>
 
   <!-- ══════════════ MAIN ══════════════ -->
@@ -57,17 +57,17 @@
       <div class="fu">
         <div class="sh"><span class="st">Acciones Rápidas</span></div>
         <div class="qa-grid qa-grid-responsive">
-          <div class="qa-btn" onclick="ejecutarPipelineCompleto()"><div class="qa-ico">🚀</div><div class="qa-lbl">Pipeline Completo</div><div class="qa-sub">Fases 1 → 2 → 3</div></div>
-          <div class="qa-btn" onclick="ejecutarFase(1)"><div class="qa-ico">🔍</div><div class="qa-lbl">Scraping + Descarga</div><div class="qa-sub">Scraping + yt-dlp</div></div>
-          <div class="qa-btn" onclick="ejecutarDescargaUnicamente()"><div class="qa-ico">⬇️</div><div class="qa-lbl">Solo Descargar</div><div class="qa-sub">Descarga cola de pendientes</div></div>
-          <div class="qa-btn" onclick="abrirProgramar()"><div class="qa-ico">📅</div><div class="qa-lbl">Programar Tarea</div><div class="qa-sub">Scheduler automático</div></div>
-          <div class="qa-btn" onclick="navTo('videos',document.getElementById('nav-videos'))"><div class="qa-ico">🎬</div><div class="qa-lbl">Ver Videos</div><div class="qa-sub">Biblioteca descargada</div></div>
+          <div class="qa-btn" onclick="ejecutarPipelineCompleto()"><div class="qa-ico"><img src="iconos/pipeline.svg" class="icono-svg-xl" alt="Pipeline" /></div><div class="qa-lbl">Pipeline Completo</div><div class="qa-sub">Fases 1 → 2 → 3</div></div>
+          <div class="qa-btn" onclick="ejecutarFase(1)"><div class="qa-ico"><img src="iconos/buscar.svg" class="icono-svg-xl" alt="Scraping" /></div><div class="qa-lbl">Scraping + Descarga</div><div class="qa-sub">Scraping + yt-dlp</div></div>
+          <div class="qa-btn" onclick="ejecutarDescargaUnicamente()"><div class="qa-ico"><img src="iconos/descargar.svg" class="icono-svg-xl" alt="Descargar" /></div><div class="qa-lbl">Solo Descargar</div><div class="qa-sub">Descarga cola de pendientes</div></div>
+          <div class="qa-btn" onclick="abrirProgramar()"><div class="qa-ico"><img src="iconos/programar.svg" class="icono-svg-xl" alt="Programar" /></div><div class="qa-lbl">Programar Tarea</div><div class="qa-sub">Scheduler automático</div></div>
+          <div class="qa-btn" onclick="navTo('videos',document.getElementById('nav-videos'))"><div class="qa-ico"><img src="iconos/videos.svg" class="icono-svg-xl" alt="Videos" /></div><div class="qa-lbl">Ver Videos</div><div class="qa-sub">Biblioteca descargada</div></div>
         </div>
       </div>
 
       <!-- GESTIÓN DE FUENTES URL -->
       <div class="fu">
-        <div class="sh"><span class="st">Fuentes de Extracción (Facebook: Grupos, Páginas, Watch...)</span><button class="btn bs bsm" onclick="cargarFuentesDesdeServidor()">🔄 Recargar Fuentes</button></div>
+        <div class="sh"><span class="st">Fuentes de Extracción (Facebook: Grupos, Páginas, Watch...)</span><button class="btn bs bsm" onclick="cargarFuentesDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Recargar Fuentes</button></div>
         <div class="card card-pad">
           <!-- Formulario agregar nueva fuente -->
           <div class="form-grid-btn">
@@ -75,15 +75,15 @@
               <label class="fl">URL de Facebook (Grupo, Página, Watch, Perfil, Reel, Video Directo...)</label>
               <input type="url" class="fi" id="nueva-fuente-url" placeholder="https://www.facebook.com/groups/nombre_grupo/videos/ o https://www.facebook.com/watch/" />
             </div>
-            <button class="btn bp btn-form-action" onclick="agregarFuenteURL()">+ Agregar Fuente</button>
+            <button class="btn bp btn-form-action" onclick="agregarFuenteURL()"><img src="iconos/fuentes.svg" class="icono-svg-sm" /> Agregar Fuente</button>
           </div>
           <!-- Ejemplos rápidos de tipos de fuente -->
           <div class="ejemplos-row">
             <span class="fw-600">Tipos soportados:</span>
-            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/watch/')">📺 Watch Global</span>
-            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/groups/peliculasymovietrailers/videos/')">👥 Grupo</span>
-            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/PeliculasResumenes/videos/')">📄 Página</span>
-            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/reel/1234567890/')">📱 Reel</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/watch/')">Watch Global</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/groups/peliculasymovietrailers/videos/')">Grupo</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/PeliculasResumenes/videos/')">Página</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/reel/1234567890/')">Reel</span>
           </div>
           <!-- Tabla de fuentes agregadas -->
           <table class="stab" id="tabla-fuentes">
@@ -98,10 +98,10 @@
       <!-- COLA DE PENDIENTES Y DESCARGA DIRECTA -->
       <div class="fu">
         <div class="sh">
-          <span class="st">📥 Enlaces Directos de Video en Cola de Pendientes (yt-dlp)</span>
+          <span class="st"><img src="iconos/descargar.svg" class="icono-svg-sm" style="margin-right:6px" /> Enlaces Directos de Video en Cola de Pendientes (yt-dlp)</span>
           <div class="flex-gap-8">
-            <button class="btn bs bsm" onclick="cargarPendientesDesdeServidor()">🔄 Recargar Cola</button>
-            <button class="btn bp bsm" onclick="ejecutarDescargaUnicamente()">⬇️ Iniciar Descargas Pendientes</button>
+            <button class="btn bs bsm" onclick="cargarPendientesDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Recargar Cola</button>
+            <button class="btn bp bsm" onclick="ejecutarDescargaUnicamente()"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Iniciar Descargas Pendientes</button>
           </div>
         </div>
         <div class="card card-pad">
@@ -111,7 +111,7 @@
               <label class="fl">Añadir URL Directa de Video (Facebook, YouTube, TikTok...)</label>
               <input type="url" class="fi" id="nuevo-pendiente-url" placeholder="https://www.facebook.com/watch/?v=1234567890 o enlace directo de video..." />
             </div>
-            <button class="btn bp btn-form-action" onclick="agregarEnlacePendiente()">+ Agregar a Cola</button>
+            <button class="btn bp btn-form-action" onclick="agregarEnlacePendiente()"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Agregar a Cola</button>
           </div>
           <!-- Tabla de enlaces pendientes -->
           <table class="stab">
@@ -127,16 +127,16 @@
       <div class="fu2">
         <div class="sh"><span class="st">Estadísticas de Sesión</span><span class="txt-small-sub" id="upd-time">—</span></div>
         <div class="srow">
-          <div class="sc-card"><span class="sc-ico">🔗</span><div class="sc-lbl">URLs Detectadas</div><div class="sc-val c-cyan" id="s-det">0</div><div class="sc-sub">Historial global</div></div>
-          <div class="sc-card"><span class="sc-ico">⬇️</span><div class="sc-lbl">Videos Descargados</div><div class="sc-val c-green" id="s-desc">0</div><div class="sc-sub">MP4 en disco</div></div>
-          <div class="sc-card"><span class="sc-ico">✂️</span><div class="sc-lbl">Clips Generados</div><div class="sc-val c-purple" id="s-clips">0</div><div class="sc-sub">Partes de 8 min</div></div>
-          <div class="sc-card"><span class="sc-ico">📡</span><div class="sc-lbl">Publicaciones</div><div class="sc-val c-amber" id="s-pub">0</div><div class="sc-sub">Todas las plataformas</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/fuentes.svg" class="icono-svg-lg" /></span><div class="sc-lbl">URLs Detectadas</div><div class="sc-val c-cyan" id="s-det">0</div><div class="sc-sub">Historial global</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/descargar.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Videos Descargados</div><div class="sc-val c-green" id="s-desc">0</div><div class="sc-sub">MP4 en disco</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/cortar.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Clips Generados</div><div class="sc-val c-purple" id="s-clips">0</div><div class="sc-sub">Partes de 8 min</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/telegram.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Publicaciones</div><div class="sc-val c-amber" id="s-pub">0</div><div class="sc-sub">Todas las plataformas</div></div>
         </div>
       </div>
 
       <!-- Control de Fases -->
       <div class="fu3">
-        <div class="sh"><span class="st">Control de Fases</span><button class="btn bs bsm" onclick="detenerTodo()">⛔ Detener Todo</button></div>
+        <div class="sh"><span class="st">Control de Fases</span><button class="btn bs bsm" onclick="detenerTodo()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Detener Todo</button></div>
         <div class="fgrid">
 
           <!-- FASE 1 -->
@@ -152,9 +152,9 @@
             </div>
             <div class="pwrap"><div class="plbl"><span>Progreso</span><span id="f1pct">0%</span></div><div class="ptrack"><div class="pfill pfill-cyan" id="f1b"></div></div></div>
             <div class="fact">
-              <button class="btn bp" id="btn1" onclick="ejecutarFase(1)">▶ Iniciar</button>
-              <button class="btn bd bsm" onclick="detenerFase(1)">⛔</button>
-              <button class="btn bs bsm" onclick="verLogFase(1)">📄 Log</button>
+              <button class="btn bp" id="btn1" onclick="ejecutarFase(1)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(1)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="verLogFase(1)"><img src="iconos/logs.svg" class="icono-svg-sm" /> Log</button>
             </div>
           </div>
 
@@ -171,9 +171,9 @@
             </div>
             <div class="pwrap"><div class="plbl"><span>Procesamiento</span><span id="f2pct">0%</span></div><div class="ptrack"><div class="pfill pfill-purple" id="f2b"></div></div></div>
             <div class="fact">
-              <button class="btn bp btn-purple" id="btn2" onclick="ejecutarFase(2)">▶ Iniciar</button>
-              <button class="btn bd bsm" onclick="detenerFase(2)">⛔</button>
-              <button class="btn bs bsm" onclick="abrirVelocidad()">⚡ Vel</button>
+              <button class="btn bp btn-purple" id="btn2" onclick="ejecutarFase(2)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(2)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="abrirVelocidad()"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Vel</button>
             </div>
           </div>
 
@@ -190,9 +190,9 @@
             </div>
             <div class="pwrap"><div class="plbl"><span>Publicación</span><span id="f3pct">0%</span></div><div class="ptrack"><div class="pfill pfill-pink" id="f3b"></div></div></div>
             <div class="fact">
-              <button class="btn bp btn-pink" id="btn3" onclick="ejecutarFase(3)">▶ Iniciar</button>
-              <button class="btn bd bsm" onclick="detenerFase(3)">⛔</button>
-              <button class="btn bs bsm" onclick="abrirProgramar()">📅</button>
+              <button class="btn bp btn-pink" id="btn3" onclick="ejecutarFase(3)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(3)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="abrirProgramar()" title="Programar"><img src="iconos/programar.svg" class="icono-svg-sm" /></button>
             </div>
           </div>
 
@@ -209,9 +209,9 @@
             </div>
             <div class="pwrap"><div class="plbl"><span>Subida Telegram</span><span id="f4pct">0%</span></div><div class="ptrack"><div class="pfill" id="f4b" style="width:0%;background:linear-gradient(90deg,#005588,#0088cc)"></div></div></div>
             <div class="fact">
-              <button class="btn bp btn-telegram" id="btn4" onclick="ejecutarFase(4)">✈️ Publicar Todo</button>
-              <button class="btn bp bsm btn-telegram" onclick="abrirModalTelegramManual()">🎯 Selección Manual</button>
-              <button class="btn bd bsm" onclick="detenerFase(4)">⛔</button>
+              <button class="btn bp btn-telegram" id="btn4" onclick="abrirModalTelegramLotes()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Publicar Todo</button>
+              <button class="btn bp bsm btn-telegram" onclick="abrirModalTelegramManual()"><img src="iconos/videos.svg" class="icono-svg-sm" /> Selección Manual</button>
+              <button class="btn bd bsm" onclick="detenerFase(4)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Parar</button>
             </div>
           </div>
 
@@ -226,19 +226,19 @@
 
             <!-- Scheduler -->
             <div class="card">
-              <div class="ctitle"><span class="cico cico-purple">📅</span>Programación de Publicaciones</div>
+              <div class="ctitle"><span class="cico cico-purple"><img src="iconos/programar.svg" class="icono-svg-sm" /></span>Programación de Publicaciones</div>
               <div class="sched-row">
                 <div class="fg"><label class="fl">Tarea</label>
                   <select class="fsel" id="sc-tarea"><option>Pipeline Completo (1+2+3)</option><option>Solo Extracción</option><option>Solo Edición</option><option>Solo Publicación</option></select></div>
                 <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="sc-fecha" /></div>
                 <div class="fg"><label class="fl">Hora</label><input type="time" class="fi" id="sc-hora" value="03:00" /></div>
-                <button class="btn bp btn-add-task" onclick="addTarea()">+ Add</button>
+                <button class="btn bp btn-add-task" onclick="addTarea()"><img src="iconos/programar.svg" class="icono-svg-sm" /> Add</button>
               </div>
               <table class="stab">
                 <thead><tr><th>Tarea</th><th>Fecha & Hora</th><th>Estado</th><th></th></tr></thead>
                 <tbody id="tb-tareas">
-                  <tr><td class="tn">Pipeline Completo</td><td class="tt">2026-08-29 03:00</td><td><span class="tbadge pend">⏳ Pendiente</span></td><td><button class="btn bs bsm" onclick="delTarea(this)">🗑</button></td></tr>
-                  <tr><td class="tn">Solo Publicación</td><td class="tt">2026-08-28 22:00</td><td><span class="tbadge actv">🔄 Activa</span></td><td><button class="btn bs bsm" onclick="delTarea(this)">🗑</button></td></tr>
+                  <tr><td class="tn">Pipeline Completo</td><td class="tt">2026-08-29 03:00</td><td><span class="tbadge pend">Pendiente</span></td><td><button class="btn bs bsm" onclick="delTarea(this)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button></td></tr>
+                  <tr><td class="tn">Solo Publicación</td><td class="tt">2026-08-28 22:00</td><td><span class="tbadge actv">Activa</span></td><td><button class="btn bs bsm" onclick="delTarea(this)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button></td></tr>
                 </tbody>
               </table>
             </div>
@@ -247,7 +247,7 @@
             <div class="log-card">
               <div class="log-hdr">
                 <div class="log-title"><span class="live-dot"></span>Log de Actividad en Tiempo Real</div>
-                <button class="btn bs bsm" onclick="limpiarLog()">🗑 Limpiar</button>
+                <button class="btn bs bsm" onclick="limpiarLog()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Limpiar</button>
               </div>
               <div class="log-body" id="log-bd"></div>
             </div>
@@ -259,16 +259,16 @@
 
             <!-- Plataformas -->
             <div class="card">
-              <div class="ctitle"><span class="cico cico-cyan">🌐</span>Plataformas & Sesiones Reales</div>
+              <div class="ctitle"><span class="cico cico-cyan"><img src="iconos/plataformas.svg" class="icono-svg-sm" /></span>Plataformas & Sesiones Reales</div>
               <div class="pl-list">
-                <div class="pl-row"><div class="pl-logo yt">▶️</div><div class="pl-info"><div class="pl-name">YouTube</div><div class="pl-st warn" id="st-yt">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-yt" onchange="togPlat('YouTube',this)"><div class="tog-track"></div></label></div>
-                <div class="pl-row"><div class="pl-logo tk">🎵</div><div class="pl-info"><div class="pl-name">TikTok</div><div class="pl-st warn" id="st-tk">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-tk" onchange="togPlat('TikTok',this)"><div class="tog-track"></div></label></div>
-                <div class="pl-row"><div class="pl-logo fb">📘</div><div class="pl-info"><div class="pl-name">Facebook</div><div class="pl-st warn" id="st-fb">Verificando sesión...</div></div><label class="tog"><input type="checkbox" id="tog-fb" onchange="togPlat('Facebook',this)"><div class="tog-track"></div></label></div>
-                <div class="pl-row"><div class="pl-logo ig">📸</div><div class="pl-info"><div class="pl-name">Instagram</div><div class="pl-st warn" id="st-ig">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-ig" onchange="togPlat('Instagram',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo yt"><img src="iconos/youtube.svg" alt="YouTube" /></div><div class="pl-info"><div class="pl-name">YouTube</div><div class="pl-st warn" id="st-yt">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-yt" onchange="togPlat('YouTube',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo tk"><img src="iconos/tiktok.svg" alt="TikTok" /></div><div class="pl-info"><div class="pl-name">TikTok</div><div class="pl-st warn" id="st-tk">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-tk" onchange="togPlat('TikTok',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo fb"><img src="iconos/facebook.svg" alt="Facebook" /></div><div class="pl-info"><div class="pl-name">Facebook</div><div class="pl-st warn" id="st-fb">Verificando sesión...</div></div><label class="tog"><input type="checkbox" id="tog-fb" onchange="togPlat('Facebook',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo ig"><img src="iconos/instagram.svg" alt="Instagram" /></div><div class="pl-info"><div class="pl-name">Instagram</div><div class="pl-st warn" id="st-ig">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-ig" onchange="togPlat('Instagram',this)"><div class="tog-track"></div></label></div>
                 <div class="pl-row pl-row-col">
                   <div class="flex-between">
                     <div class="flex-align-11">
-                      <div class="pl-logo tg tg-logo">✈️</div>
+                      <div class="pl-logo tg tg-logo"><img src="iconos/telegram.svg" alt="Telegram" /></div>
                       <div class="pl-info">
                         <div class="pl-name">Telegram (Canal Objetivo)</div>
                         <div class="pl-st warn" id="st-tg">Verificando sesión...</div>
@@ -279,20 +279,20 @@
                   </div>
                   <div class="flex-gap-6-m2">
                     <input type="text" id="input-canal-tg" class="fi input-tg" placeholder="Ingresa tu canal (ej: mi_canal o @mi_canal)" value="" />
-                    <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegram()">💾 Guardar</button>
+                    <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegram()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar</button>
                   </div>
                 </div>
 
               </div>
               <div class="flex-col-gap-6-m10">
-                <button class="btn bp bsm bfw btn-telegram" onclick="iniciarSesionTelegramWeb()">🔑 Iniciar/Guardar Sesión Telegram Web</button>
-                <button class="btn bs bsm bfw" onclick="abrirConfig()">⚙ Gestionar Cookies JSON / Config</button>
+                <button class="btn bp bsm bfw btn-telegram" onclick="iniciarSesionTelegramWeb()"><img src="iconos/sesion.svg" class="icono-svg-sm" /> Iniciar/Guardar Sesión Telegram Web</button>
+                <button class="btn bs bsm bfw" onclick="abrirConfig()"><img src="iconos/config.svg" class="icono-svg-sm" /> Gestionar Cookies JSON / Config</button>
               </div>
             </div>
 
             <!-- Cola de Videos Real -->
             <div class="card">
-              <div class="ctitle"><span class="cico cico-amber">📋</span>Cola de Videos en Disco</div>
+              <div class="ctitle"><span class="cico cico-amber"><img src="iconos/videos.svg" class="icono-svg-sm" /></span>Cola de Videos en Disco</div>
               <div class="ql" id="cola-list">
                 <div class="td-empty">Cargando cola de videos reales...</div>
               </div>
@@ -315,7 +315,7 @@
               <option value="editado">Editados</option>
               <option value="publicado">Publicados</option>
             </select>
-            <button class="btn bp bsm" onclick="ejecutarFase(1)">+ Descargar Más</button>
+            <button class="btn bp bsm" onclick="ejecutarFase(1)"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Descargar Más</button>
           </div>
         </div>
         <div class="gallery-grid" id="gallery-grid"></div>
@@ -327,13 +327,13 @@
       <div class="fu">
         <div class="sh">
           <div>
-            <span class="st">📺 Estudio de Reproducción & Editor de Publicación</span>
+            <span class="st"><img src="iconos/estudio.svg" class="icono-svg-sm" style="margin-right:6px" /> Estudio de Reproducción & Editor de Publicación</span>
             <div class="txt-small-sub" style="margin-top:2px">Reproducción adaptativa con pixeles controlados, edición de metadatos en tiempo real y publicación multicanal.</div>
           </div>
           <div class="flex-gap-8">
-            <button class="btn bs bsm" onclick="toggleModoTeatro()" id="btn-modo-teatro" title="Modo Cine / Expansión">🎬 Modo Cine</button>
-            <button class="btn bs bsm" onclick="activarModoFlotanteDesdeEstudio()" title="Minimizar a widget flotante">📌 Modo Flotante (PiP)</button>
-            <button class="btn bp bsm" onclick="cargarGaleriaDesdeServidor()">🔄 Sincronizar Disco</button>
+            <button class="btn bs bsm" onclick="toggleModoTeatro()" id="btn-modo-teatro" title="Modo Cine / Expansión"><img src="iconos/videos.svg" class="icono-svg-sm" /> Modo Cine</button>
+            <button class="btn bs bsm" onclick="activarModoFlotanteDesdeEstudio()" title="Minimizar a widget flotante"><img src="iconos/pantalla.svg" class="icono-svg-sm" /> Modo Flotante (PiP)</button>
+            <button class="btn bp bsm" onclick="cargarGaleriaDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Sincronizar Disco</button>
           </div>
         </div>
 
@@ -344,12 +344,12 @@
             <!-- Contenedor Inteligente del Reproductor -->
             <div class="estudio-player-card" id="estudio-player-box">
               <div class="estudio-video-viewport" id="estudio-viewport">
-                <video id="estudio-video" preload="none" playsinline></video>
+                <video id="estudio-video" preload="metadata" playsinline></video>
                 <div id="estudio-poster" class="estudio-poster" onclick="estudioPosterClick()">
-                  <div class="estudio-poster-ico">🎬</div>
+                  <div class="estudio-poster-ico"><img src="iconos/videos.svg" class="icono-svg-xl" /></div>
                   <div class="estudio-poster-title" id="estudio-poster-title">Ningún video seleccionado</div>
                   <div class="estudio-poster-sub" id="estudio-poster-sub">Haz clic en un video de la biblioteca lateral para reproducir y editar</div>
-                  <button class="btn bp bsm" id="estudio-poster-play-btn" style="margin-top:10px;display:none" onclick="event.stopPropagation();estudioPosterClick()">▶ Reproducir Video</button>
+                  <button class="btn bp bsm" id="estudio-poster-play-btn" style="margin-top:10px;display:none" onclick="event.stopPropagation();estudioPosterClick()"><img src="iconos/play.svg" class="icono-svg-sm" /> Reproducir Video</button>
                 </div>
                 <div class="estudio-badge-overlay" id="estudio-badge-overlay">
                   <span id="estudio-badge-estado" class="badge-pill">Sin video</span>
@@ -367,11 +367,11 @@
                 </div>
                 <div class="estudio-controls-row">
                   <div class="flex-align-8">
-                    <button class="estudio-btn" onclick="estudioPrev()" title="Anterior">⏮</button>
-                    <button class="estudio-btn" onclick="estudioSkip(-10)" title="Retroceder 10s">⏪</button>
-                    <button class="estudio-btn main" id="estudio-play-btn" onclick="estudioTogglePlay()" title="Reproducir / Pausar">▶</button>
-                    <button class="estudio-btn" onclick="estudioSkip(10)" title="Avanzar 10s">⏩</button>
-                    <button class="estudio-btn" onclick="estudioNext()" title="Siguiente">⏭</button>
+                    <button class="estudio-btn" onclick="estudioPrev()" title="Anterior"><img src="iconos/anterior.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioSkip(-10)" title="Retroceder 10s"><img src="iconos/retroceder.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn main" id="estudio-play-btn" onclick="estudioTogglePlay()" title="Reproducir / Pausar"><img src="iconos/play.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioSkip(10)" title="Avanzar 10s"><img src="iconos/avanzar.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioNext()" title="Siguiente"><img src="iconos/siguiente.svg" class="icono-svg-sm" /></button>
                     <div class="estudio-time-box">
                       <span id="estudio-cur">0:00</span> / <span id="estudio-dur">0:00</span>
                     </div>
@@ -379,7 +379,7 @@
 
                   <div class="flex-align-8">
                     <div class="estudio-vol-box">
-                      <button class="estudio-btn-icon" id="estudio-mute-btn" onclick="estudioToggleMute()">🔊</button>
+                      <button class="estudio-btn-icon" id="estudio-mute-btn" onclick="estudioToggleMute()"><img src="iconos/audio.svg" class="icono-svg-sm" /></button>
                       <input type="range" class="estudio-vol-slider" id="estudio-vol" min="0" max="1" step="0.05" value="1" oninput="estudioSetVol(this.value)">
                     </div>
 
@@ -391,7 +391,7 @@
                       <span class="estudio-spd" data-spd="2.0" onclick="estudioSetSpeed(2.0)">2.0x</span>
                     </div>
 
-                    <button class="estudio-btn-icon" onclick="estudioToggleFullscreen()" title="Pantalla Completa">⛶</button>
+                    <button class="estudio-btn-icon" onclick="estudioToggleFullscreen()" title="Pantalla Completa"><img src="iconos/pantalla.svg" class="icono-svg-sm" /></button>
                   </div>
                 </div>
               </div>
@@ -401,15 +401,16 @@
             <div class="card card-pad estudio-meta-card">
               <div class="flex-between" style="margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px">
                 <div class="flex-align-8">
-                  <span class="cico cico-cyan">✏️</span>
+                  <span class="cico cico-cyan"><img src="iconos/config.svg" class="icono-svg-sm" /></span>
                   <div>
                     <div style="font-weight:700;font-size:14px;color:var(--txt1)">Editor de Metadatos de Publicación (JSON en Tiempo Real)</div>
                     <div style="font-size:11px;color:var(--txt3)">Lo que edites aquí se guarda directamente en metadata.json y será lo que se publique automáticamente.</div>
                   </div>
                 </div>
                 <div class="flex-align-8">
-                  <span id="meta-save-badge" class="meta-badge-idle">✓ Sincronizado</span>
-                  <button class="btn bp bsm" onclick="guardarMetadatosActivo()">💾 Guardar Ahora</button>
+                  <span id="meta-save-badge" class="meta-badge-idle"><img src="iconos/check.svg" class="icono-svg-sm" /> Sincronizado</span>
+                  <button class="btn bp bsm" onclick="guardarMetadatosActivo()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Ahora</button>
+                  <button class="btn bd bsm" onclick="confirmarEliminarVideoEstudio()" title="Eliminar este video, sus clips y su archivo JSON permanentemente del disco"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Eliminar Video & JSON</button>
                 </div>
               </div>
 
@@ -443,12 +444,69 @@
                 <!-- Acciones rápidas de publicación directa para este video -->
                 <div class="meta-pub-actions">
                   <span style="font-size:11px;font-weight:600;color:var(--txt2);margin-right:6px">Publicar este video:</span>
-                  <button class="btn bs bsm btn-pub-tg" onclick="publicarVideoActivo('telegram')">✈️ Telegram HD</button>
-                  <button class="btn bs bsm" onclick="publicarVideoActivo('youtube')">▶️ YouTube</button>
-                  <button class="btn bs bsm" onclick="publicarVideoActivo('tiktok')">🎵 TikTok</button>
-                  <button class="btn bs bsm" onclick="publicarVideoActivo('facebook')">📘 Facebook</button>
-                  <button class="btn bs bsm" onclick="publicarVideoActivo('instagram')">📸 Instagram</button>
-                  <button class="btn bp bsm" onclick="ejecutarFase(3)">🚀 Todas las Redes</button>
+                  <button class="btn bs bsm btn-pub-tg" onclick="publicarVideoActivo('telegram')"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Telegram HD</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('youtube')"><img src="iconos/youtube.svg" class="icono-svg-sm" /> YouTube</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('tiktok')"><img src="iconos/tiktok.svg" class="icono-svg-sm" /> TikTok</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('facebook')"><img src="iconos/facebook.svg" class="icono-svg-sm" /> Facebook</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('instagram')"><img src="iconos/instagram.svg" class="icono-svg-sm" /> Instagram</button>
+                  <button class="btn bp bsm" onclick="ejecutarFase(3)"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Todas las Redes</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Módulo de Recorte Inteligente en Partes / Segmentación -->
+            <div class="card card-pad estudio-recorte-card" style="margin-top:14px">
+              <div class="flex-between" style="margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px">
+                <div class="flex-align-8">
+                  <span class="cico cico-amber"><img src="iconos/cortar.svg" class="icono-svg-sm" /></span>
+                  <div>
+                    <div style="font-weight:700;font-size:14px;color:var(--txt1)">Módulo de Recorte & Segmentación de Video</div>
+                    <div style="font-size:11px;color:var(--txt3)">Divide el video en partes optimizadas para TikTok, YouTube Shorts, Reels o secuencias para Facebook/Telegram.</div>
+                  </div>
+                </div>
+                <div class="flex-align-8">
+                  <span id="badge-estado-recorte" class="tbadge pend">Sin clips</span>
+                </div>
+              </div>
+
+              <!-- Controles de recorte -->
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;margin-bottom:12px">
+                <div>
+                  <label class="fl">Duración por Segmento</label>
+                  <select class="fsel" id="sel-duracion-recorte" onchange="onCambioDuracionRecorte(this.value)">
+                    <option value="60">60 segundos (TikTok / Shorts / Reels)</option>
+                    <option value="180">3 minutos (180s — Facebook / Clips Medios)</option>
+                    <option value="480" selected>8 minutos (480s — Estándar Fase 2 / Películas)</option>
+                    <option value="custom">Personalizado (segundos)...</option>
+                  </select>
+                </div>
+                <div id="wrap-duracion-custom" style="display:none;width:120px">
+                  <label class="fl">Segundos</label>
+                  <input type="number" class="fi" id="input-duracion-custom" placeholder="Ej: 90" min="10" max="7200" value="60" />
+                </div>
+                <div style="width:160px">
+                  <label class="fl">Velocidad</label>
+                  <select class="fsel" id="sel-velocidad-recorte">
+                    <option value="1.0" selected>1.0x (Normal)</option>
+                    <option value="1.25">1.25x (Rápido)</option>
+                    <option value="1.5">1.5x (Acelerado)</option>
+                  </select>
+                </div>
+                <div>
+                  <button class="btn bp" id="btn-ejecutar-recorte" onclick="ejecutarRecorteEstudio()" style="white-space:nowrap;height:34px">
+                    <img src="iconos/cortar.svg" class="icono-svg-sm" /> Cortar en Partes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Contenedor de Clips Hijos Generados -->
+              <div id="contenedor-clips-estudio" style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px">
+                <div class="flex-between" style="margin-bottom:8px">
+                  <span style="font-size:12px;font-weight:700;color:var(--txt1)" id="titulo-clips-estudio">Clips Recortados (0 partes)</span>
+                  <span style="font-size:11px;color:var(--txt3)">Haz clic en un clip para previsualizarlo en el reproductor</span>
+                </div>
+                <div id="lista-clips-estudio" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto">
+                  <div style="font-size:11px;color:var(--txt3);text-align:center;padding:12px">El video actual no tiene clips recortados. Usa el botón superior para generarlos.</div>
                 </div>
               </div>
             </div>
@@ -460,7 +518,7 @@
             <div class="card card-pad estudio-playlist-card">
               <div class="flex-between" style="margin-bottom:10px">
                 <div class="flex-align-8">
-                  <span class="cico cico-amber">📋</span>
+                  <span class="cico cico-amber"><img src="iconos/videos.svg" class="icono-svg" /></span>
                   <span style="font-weight:700;font-size:13px;color:var(--txt1)">Lista de Videos</span>
                 </div>
                 <span class="tbadge actv" id="estudio-total-badge">0 videos</span>
@@ -468,7 +526,7 @@
 
               <!-- Filtro y Buscador en Tiempo Real -->
               <div class="estudio-search-row">
-                <input type="text" class="fi" id="estudio-input-busqueda" placeholder="🔍 Buscar por título o ID..." oninput="filtrarVideosEstudio(this.value)" />
+                <input type="text" class="fi" id="estudio-input-busqueda" placeholder="Buscar por título o ID..." oninput="filtrarVideosEstudio(this.value)" />
                 <select class="fsel" id="estudio-filter-estado" onchange="filtrarVideosEstudio()">
                   <option value="all">Todos</option>
                   <option value="descargado">Descargados</option>
@@ -498,16 +556,16 @@
     <div class="pip-drag-title" id="pip-title">Sin video seleccionado</div>
     <div class="pip-drag-actions">
       <button class="pip-act-btn" onclick="pipMinimize()" title="Minimizar">—</button>
-      <button class="pip-act-btn" onclick="pipExpand()" title="Expandir">⛶</button>
+      <button class="pip-act-btn" onclick="pipExpand()" title="Expandir"><img src="iconos/pantalla.svg" class="icono-svg-sm" /></button>
       <button class="pip-act-btn" onclick="cerrarPiP()" title="Cerrar">✕</button>
     </div>
   </div>
 
   <!-- Video -->
   <div id="pip-video-wrap">
-    <video id="pip-video" preload="none"></video>
+    <video id="pip-video" preload="metadata"></video>
     <div id="pip-poster">
-      <div class="pip-empty-ico">🎬</div>
+      <div class="pip-empty-ico"><img src="iconos/play.svg" class="icono-svg-xl" /></div>
       <div class="pip-empty-txt">Selecciona un video de la<br>Biblioteca o de la Cola</div>
     </div>
   </div>
@@ -525,14 +583,14 @@
       <span id="pip-dur">0:00</span>
     </div>
     <div class="pip-btns">
-      <button class="pip-btn" onclick="pipPrev()" title="Anterior">⏮</button>
-      <button class="pip-btn" onclick="pip10Back()" title="-10s">⏪</button>
-      <button class="pip-btn main" id="pip-play-btn" onclick="togglePlay()">▶</button>
-      <button class="pip-btn" onclick="pip10Fwd()" title="+10s">⏩</button>
-      <button class="pip-btn" onclick="pipNext()" title="Siguiente">⏭</button>
+      <button class="pip-btn" onclick="pipPrev()" title="Anterior"><img src="iconos/anterior.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pip10Back()" title="-10s"><img src="iconos/retroceder.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn main" id="pip-play-btn" onclick="togglePlay()"><img src="iconos/play.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pip10Fwd()" title="+10s"><img src="iconos/avanzar.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pipNext()" title="Siguiente"><img src="iconos/siguiente.svg" class="icono-svg-sm" /></button>
       <div class="pip-sp"></div>
       <div class="pip-vol-wrap">
-        <button class="pip-btn btn-font-14" onclick="toggleMute()" id="pip-mute-btn">🔊</button>
+        <button class="pip-btn btn-font-14" onclick="toggleMute()" id="pip-mute-btn"><img src="iconos/audio.svg" class="icono-svg-sm" /></button>
         <input type="range" class="pip-vol" id="pip-vol" min="0" max="1" step="0.05" value="1" oninput="setVol(this.value)">
       </div>
       <span class="pip-speed-badge" id="pip-spd" onclick="cycleSpeed()">1.0x</span>
@@ -546,7 +604,7 @@
 <!-- MODALES -->
 <div class="mover" id="m-programar">
   <div class="modal">
-    <div class="mhdr"><div class="mtitle">📅 Programar Nueva Tarea</div><button class="mclose" onclick="cerrarModal('m-programar')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/programar.svg" class="icono-svg" /> Programar Nueva Tarea</div><button class="mclose" onclick="cerrarModal('m-programar')">✕</button></div>
     <div class="mbody">
       <div class="fg"><label class="fl">Tipo de Tarea</label><select class="fsel"><option>Pipeline Completo (1+2+3)</option><option>Solo Extracción (Fase 1)</option><option>Solo Edición (Fase 2)</option><option>Solo Publicación (Fase 3)</option></select></div>
       <div class="fg"><label class="fl">URL Objetivo (Facebook)</label><input type="url" class="fi" placeholder="https://www.facebook.com/watch/" /></div>
@@ -557,21 +615,21 @@
       <div class="fg"><label class="fl">Repetición</label><select class="fsel"><option>Sin repetición (una vez)</option><option>Cada hora</option><option>Cada 6 horas</option><option>Diariamente</option><option>Cada semana</option></select></div>
       <div class="fg"><label class="fl">Plataformas</label>
         <div class="pl-sel">
-          <label class="plci"><input type="checkbox" checked> ▶️ YouTube</label>
-          <label class="plci"><input type="checkbox" checked> 🎵 TikTok</label>
-          <label class="plci"><input type="checkbox"> 📘 Facebook</label>
-          <label class="plci"><input type="checkbox" checked> 📸 Instagram</label>
+          <label class="plci"><input type="checkbox" checked> <img src="iconos/youtube.svg" class="icono-svg-sm" /> YouTube</label>
+          <label class="plci"><input type="checkbox" checked> <img src="iconos/tiktok.svg" class="icono-svg-sm" /> TikTok</label>
+          <label class="plci"><input type="checkbox"> <img src="iconos/facebook.svg" class="icono-svg-sm" /> Facebook</label>
+          <label class="plci"><input type="checkbox" checked> <img src="iconos/instagram.svg" class="icono-svg-sm" /> Instagram</label>
         </div>
       </div>
       <div class="fg"><label class="fl">Velocidad</label><select class="fsel"><option>1.0x — Normal (sin recodificar)</option><option>1.25x — Rápido (GPU)</option><option>1.50x — Muy rápido (GPU)</option></select></div>
     </div>
-    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-programar')">Cancelar</button><button class="btn bp" onclick="guardarProg()">✓ Guardar Tarea</button></div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-programar')">Cancelar</button><button class="btn bp" onclick="guardarProg()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Tarea</button></div>
   </div>
 </div>
 
 <div class="mover" id="m-config">
   <div class="modal">
-    <div class="mhdr"><div class="mtitle">⚙️ Configuración del Sistema</div><button class="mclose" onclick="cerrarModal('m-config')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/config.svg" class="icono-svg" /> Configuración del Sistema</div><button class="mclose" onclick="cerrarModal('m-config')">✕</button></div>
     <div class="mbody">
       <div class="grid-2col">
         <div class="fg"><label class="fl">Máx. Scrolls por Sesión</label><input type="number" class="fi" id="cfg-max-scrolls" value="50" /></div>
@@ -589,13 +647,13 @@
         </select>
       </div>
     </div>
-    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-config')">Cancelar</button><button class="btn bp" onclick="guardarConfig()">💾 Guardar Configuración</button></div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-config')">Cancelar</button><button class="btn bp" onclick="guardarConfig()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Configuración</button></div>
   </div>
 </div>
 
 <div class="mover" id="m-vel">
   <div class="modal modal-sm">
-    <div class="mhdr"><div class="mtitle">⚡ Velocidad de Procesamiento</div><button class="mclose" onclick="cerrarModal('m-vel')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/pipeline.svg" class="icono-svg" /> Velocidad de Procesamiento</div><button class="mclose" onclick="cerrarModal('m-vel')">✕</button></div>
     <div class="mbody">
       <p class="modal-desc">Velocidades > 1.0x requieren recodificación con GPU (NVENC/QSV). Velocidad 1.0x usa stream copy directo sin pérdida de calidad.</p>
       <div class="flex-col-gap-8">
@@ -604,7 +662,7 @@
         <label class="plci lbl-pointer"><input type="radio" name="vel" value="1.5" class="accent-cyan"><div><div class="vel-title">1.50x — Muy Rápido</div><div class="vel-sub">setpts=0.666*PTS + atempo=1.5. Encoder GPU.</div></div></label>
       </div>
     </div>
-    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-vel')">Cancelar</button><button class="btn bp" onclick="aplicarVel()">✓ Aplicar</button></div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-vel')">Cancelar</button><button class="btn bp" onclick="aplicarVel()"><img src="iconos/check.svg" class="icono-svg-sm" /> Aplicar</button></div>
   </div>
 </div>
 
@@ -612,7 +670,7 @@
 <div class="mover" id="m-publicar-activo">
   <div class="modal">
     <div class="mhdr">
-      <div class="mtitle" id="m-pub-titulo-hdr">✈️ Publicar Video Activo</div>
+      <div class="mtitle" id="m-pub-titulo-hdr"><img src="iconos/telegram.svg" class="icono-svg" id="m-pub-hdr-icon" /> Publicar Video Activo</div>
       <button class="mclose" onclick="cerrarModal('m-publicar-activo')">✕</button>
     </div>
     <div class="mbody">
@@ -647,7 +705,7 @@
         <div style="display:flex;gap:6px">
           <input type="text" id="m-pub-canal" class="fi" placeholder="Ingresa el canal (ej: @mi_canal o nombre_canal)" list="m-pub-canales-datalist" />
           <datalist id="m-pub-canales-datalist"></datalist>
-          <button type="button" class="btn bs bsm" id="btn-guardar-canal-rapido" onclick="guardarCanalRapidoModal()" title="Guardar este canal en la lista">💾 Guardar</button>
+          <button type="button" class="btn bs bsm" id="btn-guardar-canal-rapido" onclick="guardarCanalRapidoModal()" title="Guardar este canal en la lista"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar</button>
         </div>
 
         <!-- Chips de selección rápida -->
@@ -666,33 +724,104 @@
       <div class="fg">
         <label class="fl">Modo de Publicación</label>
         <div class="flex-col-gap-8">
-          <label class="plci lbl-pointer">
-            <input type="radio" name="m-pub-modo" value="completo" checked class="accent-cyan">
+          <label class="plci lbl-pointer" id="m-pub-modo-completo-wrap">
+            <input type="radio" name="m-pub-modo" value="completo" id="m-pub-radio-completo" checked class="accent-cyan">
             <div>
-              <div class="vel-title">🎬 Video Completo Original (Full HD)</div>
-              <div class="vel-sub">Sube la película o video completo en alta definición directamente al canal.</div>
+              <div class="vel-title" id="m-pub-modo-completo-titulo"><img src="iconos/play.svg" class="icono-svg-sm" /> Video Completo Original (Entero)</div>
+              <div class="vel-sub" id="m-pub-modo-completo-desc">Sube la película o video completo en alta definición directamente a la plataforma.</div>
             </div>
           </label>
-          <label class="plci lbl-pointer">
-            <input type="radio" name="m-pub-modo" value="clips" class="accent-cyan">
+          <label class="plci lbl-pointer" id="m-pub-modo-clips-wrap">
+            <input type="radio" name="m-pub-modo" value="clips" id="m-pub-radio-clips" class="accent-cyan">
             <div>
-              <div class="vel-title">✂️ Segmentos / Clips Procesados (Fase 2)</div>
-              <div class="vel-sub">Sube los fragmentos divididos en partes con sus marcas de tiempo y numeración.</div>
+              <div class="vel-title" id="m-pub-modo-clips-titulo"><img src="iconos/cortar.svg" class="icono-svg-sm" /> Segmentos / Clips Procesados (Secuencia)</div>
+              <div class="vel-sub" id="m-pub-modo-clips-desc">Sube los fragmentos divididos en partes con sus marcas de tiempo y numeración.</div>
             </div>
           </label>
+        </div>
+        <div id="m-pub-modo-nota" style="display:none;font-size:11px;color:var(--amber);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:8px;margin-top:6px"></div>
+      </div>
+
+      <!-- Modo de Ventana del Navegador: Visible vs Invisible (Headless) -->
+      <div class="fg">
+        <label class="fl"><img src="iconos/pantalla.svg" class="icono-svg-sm" style="margin-right:6px;vertical-align:middle" />Modo de Ventana del Navegador</label>
+        <select id="m-pub-modo-browser" class="fsel">
+          <option value="visible" selected>Modo Visible (Headed — Ver ventana de Chromium en pantalla)</option>
+          <option value="headless">Modo Invisible (Headless — En segundo plano sin ventana)</option>
+        </select>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">
+          Elige si deseas ver el navegador Chromium en pantalla o subir el video en segundo plano sin interrumpir tu trabajo.
         </div>
       </div>
     </div>
     <div class="mfoot">
       <button class="btn bs" onclick="cerrarModal('m-publicar-activo')">Cancelar</button>
-      <button class="btn bp btn-telegram" id="m-pub-btn-confirmar" onclick="confirmarPublicacionDirecta()">🚀 Confirmar y Publicar Ahora</button>
+      <button class="btn bp btn-telegram" id="m-pub-btn-confirmar" onclick="confirmarPublicacionDirecta()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Confirmar y Publicar Ahora</button>
+    </div>
+  </div>
+</div>
+
+<div class="mover" id="m-telegram-lotes">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Publicar Todo por Lote — Telegram HD</div>
+      <button class="mclose" onclick="cerrarModal('m-telegram-lotes')">✕</button>
+    </div>
+    <div class="mbody">
+      <p class="modal-desc">
+        Se creará una cola temporal en disco para procesar todos los videos uno a uno de forma secuencial, garantizando bajo consumo de memoria RAM y verificando la subida real en el DOM antes de cerrar Chromium.
+      </p>
+
+      <div class="fg">
+        <label class="fl">Canal Objetivo de Telegram</label>
+        <div class="flex-gap-6-m2">
+          <input type="text" id="m-tg-lote-canal" class="fi" placeholder="Ingresa tu canal (ej: mi_canal o @mi_canal)" value="" />
+          <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegramModalLote()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Canal</button>
+        </div>
+      </div>
+
+      <!-- Modo de Ventana del Navegador: Visible vs Invisible (Headless) -->
+      <div class="fg">
+        <label class="fl"><img src="iconos/pantalla.svg" class="icono-svg-sm" style="margin-right:6px;vertical-align:middle" />Modo de Ventana del Navegador</label>
+        <select id="m-tg-lote-browser" class="fsel">
+          <option value="visible" selected>Modo Visible (Headed — Ver ventana de Chromium en pantalla)</option>
+          <option value="headless">Modo Invisible (Headless — En segundo plano sin ventana)</option>
+        </select>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">
+          Elige si deseas observar el proceso de subida en pantalla o ejecutarlo en modo invisible.
+        </div>
+      </div>
+
+      <!-- Modo de Video: Original HD Completo vs Clips Segmentados -->
+      <div class="fg">
+        <label class="fl">Formato de Contenido a Publicar</label>
+        <select id="m-tg-lote-modo-video" class="fsel">
+          <option value="completo" selected>Videos Completos Originales (HD desde /descargas)</option>
+          <option value="clips">Clips / Segmentos Recortados (desde /procesados)</option>
+        </select>
+      </div>
+
+      <!-- Info de rendimiento y videos detectados -->
+      <div class="dialog-target-box" style="margin-bottom:0">
+        <div class="flex-between">
+          <span style="font-size:12px;color:var(--txt2)">Videos en biblioteca:</span>
+          <span id="m-tg-lote-cant-videos" style="font-family:var(--mono);font-size:12px;color:var(--cyan);font-weight:700">Calculando...</span>
+        </div>
+        <div style="font-size:11px;color:var(--txt3);line-height:1.4;margin-top:4px">
+          Arquitectura Zero-RAM: Los videos no se cargan simultáneamente en memoria; se procesan de forma atómica y pausada con supervisión activa de DOM.
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModal('m-telegram-lotes')">Cancelar</button>
+      <button class="btn bp btn-telegram" id="btn-iniciar-lote-tg" onclick="iniciarPublicacionLoteTelegram()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Iniciar Publicación por Lote</button>
     </div>
   </div>
 </div>
 
 <div class="mover" id="m-telegram-manual">
   <div class="modal">
-    <div class="mhdr"><div class="mtitle">✈️ Selección Manual de Videos para Telegram Web</div><button class="mclose" onclick="cerrarModal('m-telegram-manual')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Selección Manual de Videos para Telegram Web</div><button class="mclose" onclick="cerrarModal('m-telegram-manual')">✕</button></div>
     <div class="mbody">
       <p class="modal-desc">Elige el canal objetivo y selecciona por número o casillas los videos que deseas publicar uno por uno de forma cautelosa.</p>
       
@@ -700,9 +829,20 @@
         <label class="fl">Canal Objetivo de Telegram</label>
         <div class="flex-gap-6-m2">
           <input type="text" id="m-tg-canal-input" class="fi" placeholder="Ingresa tu canal (ej: mi_canal o @mi_canal)" value="" />
-          <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegramModal()">💾 Guardar Canal</button>
+          <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegramModal()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Canal</button>
         </div>
+      </div>
 
+      <!-- Modo de Ventana del Navegador: Visible vs Invisible (Headless) -->
+      <div class="fg">
+        <label class="fl"><img src="iconos/pantalla.svg" class="icono-svg-sm" style="margin-right:6px;vertical-align:middle" />Modo de Ventana del Navegador</label>
+        <select id="m-tg-modo-browser" class="fsel">
+          <option value="visible" selected>Modo Visible (Headed — Ver ventana de Chromium en pantalla)</option>
+          <option value="headless">Modo Invisible (Headless — En segundo plano sin ventana)</option>
+        </select>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">
+          Elige si deseas observar el proceso de subida en pantalla o ejecutarlo en modo invisible.
+        </div>
       </div>
 
       <div class="fg">
@@ -719,7 +859,54 @@
     </div>
     <div class="mfoot">
       <button class="btn bs" onclick="cerrarModal('m-telegram-manual')">Cancelar</button>
-      <button class="btn bp btn-telegram" onclick="publicarSeleccionTelegramModal()">🚀 Iniciar Publicación Cautelosa</button>
+      <button class="btn bp btn-telegram" onclick="publicarSeleccionTelegramModal()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Iniciar Publicación Cautelosa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL CONFIRMACIÓN PERSONALIZADA (OBSIDIAN DIALOG) ══════════════ -->
+<div class="custom-dialog-overlay" id="m-confirm-custom" style="display:none">
+  <div class="custom-dialog-card" role="dialog" aria-modal="true" aria-labelledby="m-confirm-titulo">
+    <div class="dialog-top-tag">
+      <span class="dialog-pulse-dot"></span>
+      <span id="m-confirm-tag">PURGA PERMANENTE DE DISCO</span>
+    </div>
+
+    <div class="dialog-hdr">
+      <div class="dialog-icon-box">
+        <img src="iconos/eliminar.svg" id="m-confirm-icon-img" class="icono-svg" alt="Peligro" />
+      </div>
+      <div class="dialog-title-group">
+        <div class="dialog-title" id="m-confirm-titulo">¿Eliminar Video y Metadatos JSON?</div>
+        <div class="dialog-sub" id="m-confirm-sub">Esta acción purgará físicamente el archivo original, todos los clips y la configuración JSON.</div>
+      </div>
+    </div>
+
+    <div class="dialog-target-box">
+      <div class="dialog-target-header">
+        <div class="dialog-target-icon"><img src="iconos/videos.svg" class="icono-svg-sm" /></div>
+        <div class="dialog-target-title" id="m-confirm-item-titulo">Título del video</div>
+      </div>
+      <div class="dialog-target-meta">
+        <span class="dialog-badge-id" id="m-confirm-item-id">ID: 073c1f4bd7b245bb</span>
+      </div>
+      <div class="dialog-detalles-list" id="m-confirm-detalles">
+        <!-- Inyectado dinámicamente -->
+      </div>
+    </div>
+
+    <div class="dialog-alert-note">
+      <img src="iconos/alerta.svg" class="icono-svg-sm" />
+      <span id="m-confirm-nota">El espacio en disco se liberará de inmediato. Esta acción no se puede deshacer.</span>
+    </div>
+
+    <div class="dialog-footer">
+      <button type="button" class="btn-dialog-cancel" id="m-confirm-btn-cancel">
+        Cancelar <kbd class="dialog-kbd">Esc</kbd>
+      </button>
+      <button type="button" class="btn-dialog-danger" id="m-confirm-btn-action">
+        <img src="iconos/eliminar.svg" class="icono-svg-sm" /> Eliminar Permanentemente
+      </button>
     </div>
   </div>
 </div>

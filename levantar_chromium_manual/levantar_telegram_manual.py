@@ -83,7 +83,7 @@ async def ejecutar_navegador_manual() -> None:
         finally:
             if contexto:
                 await contexto.close()
-                print("[MANUAL] [✓] Contexto de navegador cerrado correctamente. Sin procesos huérfanos.")
+                print("[MANUAL] [OK] Contexto de navegador cerrado correctamente. Sin procesos huérfanos.")
 
 
 if __name__ == "__main__":

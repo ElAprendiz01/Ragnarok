@@ -1,0 +1,78 @@
+{
+  "id_video": "073c1f4bd7b245bb",
+  "url_original": "https://www.facebook.com/watch/?v=947836867696281",
+  "titulo_original": "Día del juicio Película de acción",
+  "descripcion_original": "Interesante película  en español",
+  "fecha_segmentacion": "2026-09-27T18:13:13Z",
+  "duracion_original_segundos": 5161.123,
+  "factor_velocidad_aplicado": 1.0,
+  "total_partes": 11,
+  "segmentos": [
+    {
+      "numero_parte": 1,
+      "inicio_segundos": 0.0,
+      "fin_segundos": 480.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 2,
+      "inicio_segundos": 480.0,
+      "fin_segundos": 960.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 3,
+      "inicio_segundos": 960.0,
+      "fin_segundos": 1440.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 4,
+      "inicio_segundos": 1440.0,
+      "fin_segundos": 1920.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 5,
+      "inicio_segundos": 1920.0,
+      "fin_segundos": 2400.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 6,
+      "inicio_segundos": 2400.0,
+      "fin_segundos": 2880.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 7,
+      "inicio_segundos": 2880.0,
+      "fin_segundos": 3360.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 8,
+      "inicio_segundos": 3360.0,
+      "fin_segundos": 3840.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 9,
+      "inicio_segundos": 3840.0,
+      "fin_segundos": 4320.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 10,
+      "inicio_segundos": 4320.0,
+      "fin_segundos": 4800.0,
+      "duracion_segundos": 480.0
+    },
+    {
+      "numero_parte": 11,
+      "inicio_segundos": 4800.0,
+      "fin_segundos": 5161.123,
+      "duracion_segundos": 361.123
+    }
+  ]
+}

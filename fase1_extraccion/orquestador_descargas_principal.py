@@ -168,7 +168,7 @@ class OrquestadorDescargasPrincipal:
             # Candado Anti-Duplicados: Verificar si ya fue completado o existe en disco
             archivos_existentes = [f for f in dir_destino.iterdir() if f.is_file() and f.suffix.lower() in ('.mp4', '.webm', '.mkv') and f.stat().st_size > 0] if dir_destino.exists() else []
             if self._gestor_estados.existe_en_enlaces_completados(url_actual) or archivos_existentes:
-                print(f"  [✓] Video ya descargado anteriormente en disco. Omitiendo re-descarga: {id_video}")
+                print(f"  [OK] Video ya descargado anteriormente en disco. Omitiendo re-descarga: {id_video}")
                 self._gestor_estados.remover_de_cola_pendientes(url_actual)
                 self._gestor_estados.registrar_completado(id_video, url_actual)
                 continue
@@ -181,7 +181,7 @@ class OrquestadorDescargasPrincipal:
                     self._generar_metadata_json(id_video, url_actual, dir_destino, info_raw)
                     self._gestor_estados.remover_de_cola_pendientes(url_actual)
                     self._gestor_estados.registrar_completado(id_video, url_actual)
-                    print(f"  [✓] Descarga exitosa: ID {id_video}")
+                    print(f"  [OK] Descarga exitosa: ID {id_video}")
                     pausa_sec = self._config_extraccion.get("pausa_entre_descargas_seg", 2)
                     if pausa_sec > 0:
                         await asyncio.sleep(pausa_sec)
@@ -198,7 +198,7 @@ class OrquestadorDescargasPrincipal:
                     "DESCARGA_FALLIDA", f"Máximo de {max_reintentos} reintentos agotado."
                 )
                 self._gestor_estados.remover_de_cola_pendientes(url_actual)
-                print(f"  [✗] Descarga fallida tras {max_reintentos} intentos: {url_actual}")
+                print(f"  [ERROR] Descarga fallida tras {max_reintentos} intentos: {url_actual}")
 
     # ------------------------------------------------------------------
     # DESCARGA VÍA yt-dlp (Proceso hijo del SO — Zero RAM en Python)
@@ -206,54 +206,25 @@ class OrquestadorDescargasPrincipal:
 
     def _descargar_con_ytdlp(self, url: str, dir_destino: str):
         """
-        Invoca el binario yt-dlp como proceso hijo mediante subprocess.
-        El video NUNCA se carga en la memoria RAM de Python; se escribe
-        directamente en disco por el proceso nativo de yt-dlp.
-
-        Args:
-            url:         URL del video a descargar.
-            dir_destino: Ruta del directorio donde se guardará el MP4.
-
-        Returns:
-            Tupla (exito: bool, info_dict: dict con metadata cruda o {}).
+        Descarga el video y su metadata en un único proceso hijo optimizado.
         """
-        # Primero extraer metadata JSON sin descargar
-        cmd_info = [
-            "yt-dlp",
-            "--skip-download",
-            "--dump-json",
-            "--no-warnings",
-            url
-        ]
-        try:
-            resultado_info = subprocess.run(
-                cmd_info, capture_output=True, text=True,
-                timeout=30, encoding="utf-8", shell=False
-            )
-            info_raw = {}
-            if resultado_info.returncode == 0 and resultado_info.stdout.strip():
-                info_raw = json.loads(resultado_info.stdout.strip())
-        except Exception:
-            info_raw = {}
-
-        # Luego descargar el video con regulador de ancho de banda y fragmentos
-        plantilla_salida = str(Path(dir_destino) / "video_original.%(ext)s")
+        dir_path = Path(dir_destino)
+        plantilla_salida = str(dir_path / "video_original.%(ext)s")
         cmd_descarga = [
             "yt-dlp",
             "--format", "bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/best[ext=mp4]/best",
             "--merge-output-format", "mp4",
+            "--write-info-json",
             "--no-playlist",
             "--no-warnings",
-            "--retries", "10",
-            "--fragment-retries", "10",
-            "--concurrent-fragments", "1",
+            "--retries", "5",
+            "--fragment-retries", "5",
             "--output", plantilla_salida,
         ]
 
-        # Si se configuró un límite de velocidad en parametros_globales.json (ej. "5M" o "10M")
-        limite_velocidad = self._config_extraccion.get("limite_velocidad_descarga", "")
-        if limite_velocidad:
-            cmd_descarga.extend(["--limit-rate", str(limite_velocidad)])
+        limite = self._config_extraccion.get("limite_velocidad_descarga", "")
+        if limite:
+            cmd_descarga.extend(["--limit-rate", str(limite)])
 
         cmd_descarga.append(url)
 
@@ -263,14 +234,24 @@ class OrquestadorDescargasPrincipal:
                 timeout=600, encoding="utf-8", shell=False
             )
             exito = resultado.returncode == 0
-            if not exito:
+            info_raw = {}
+            if exito:
+                # Leer el json generado por yt-dlp
+                for f_json in dir_path.glob("video_original*.info.json"):
+                    try:
+                        with open(f_json, "r", encoding="utf-8") as f:
+                            info_raw = json.load(f)
+                        break
+                    except Exception:
+                        pass
+            else:
                 print(f"    [yt-dlp ERROR] {resultado.stderr[:300]}")
             return exito, info_raw
         except subprocess.TimeoutExpired:
             print("    [yt-dlp ERROR] Timeout de descarga superado (600s).")
             return False, {}
         except FileNotFoundError:
-            print("    [yt-dlp ERROR] Binario 'yt-dlp' no encontrado. Instalar con: pip install yt-dlp")
+            print("    [yt-dlp ERROR] Binario 'yt-dlp' no encontrado.")
             return False, {}
 
     # ------------------------------------------------------------------

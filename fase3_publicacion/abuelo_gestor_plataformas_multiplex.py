@@ -24,56 +24,27 @@ from playwright.async_api import (
 )
 
 
+UA_DEFAULT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"
+
 # Configuración de cada plataforma: URL base de autenticación y User-Agent óptimo
 CONFIGURACION_PLATAFORMAS: Dict[str, Dict] = {
-    "youtube": {
-        "url_base": "https://studio.youtube.com",
-        "nombre_cookies": "cookies_youtube.json",
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
-    },
-    "tiktok": {
-        "url_base": "https://www.tiktok.com/creator-center/upload",
-        "nombre_cookies": "cookies_tiktok.json",
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
-    },
-    "facebook": {
-        "url_base": "https://www.facebook.com",
-        "nombre_cookies": "cookies_facebook.json",
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
-    },
-    "instagram": {
-        "url_base": "https://www.instagram.com",
-        "nombre_cookies": "cookies_instagram.json",
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
-    },
-    "telegram": {
-        "url_base": "https://web.telegram.org/a/",
-        "nombre_cookies": "cookies_telegram.json",
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
-    },
+    "youtube": {"url_base": "https://studio.youtube.com", "nombre_cookies": "cookies_youtube.json", "user_agent": UA_DEFAULT},
+    "tiktok": {"url_base": "https://www.tiktok.com/creator-center/upload", "nombre_cookies": "cookies_tiktok.json", "user_agent": UA_DEFAULT},
+    "facebook": {"url_base": "https://www.facebook.com", "nombre_cookies": "cookies_facebook.json", "user_agent": UA_DEFAULT},
+    "instagram": {"url_base": "https://www.instagram.com", "nombre_cookies": "cookies_instagram.json", "user_agent": UA_DEFAULT},
+    "telegram": {"url_base": "https://web.telegram.org/a/", "nombre_cookies": "cookies_telegram.json", "user_agent": UA_DEFAULT},
 }
 
-
 ARGUMENTOS_ANTIBLOQUEO_CHROMIUM = [
-    "--start-maximized",
-    "--window-size=1920,1080",
-    "--disable-blink-features=AutomationControlled",
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-infobars",
-    "--disable-dev-shm-usage",
-    "--disable-gpu",
-    "--disable-gpu-shader-disk-cache",
-    "--disable-background-timer-throttling",
-    "--disable-backgrounding-occluded-windows",
-    "--disable-renderer-backgrounding",
-    "--no-first-run",
-    "--no-service-autorun",
-    "--password-store=basic",
-    "--use-gl=swiftshader",
-    "--ignore-certificate-errors",
-    "--allow-running-insecure-content",
-    "--lang=es-MX,es;q=0.9,en-US;q=0.8,en;q=0.7",
+    "--start-maximized", "--window-size=1920,1080",
+    "--disable-blink-features=AutomationControlled", "--no-sandbox",
+    "--disable-setuid-sandbox", "--disable-infobars", "--disable-dev-shm-usage",
+    "--disable-gpu", "--disable-gpu-shader-disk-cache",
+    "--disable-background-timer-throttling", "--disable-backgrounding-occluded-windows",
+    "--disable-renderer-backgrounding", "--disable-background-networking",
+    "--disable-sync", "--disable-translate", "--no-first-run", "--no-service-autorun",
+    "--password-store=basic", "--use-gl=swiftshader", "--ignore-certificate-errors",
+    "--allow-running-insecure-content", "--lang=es-MX,es;q=0.9,en-US;q=0.8,en;q=0.7",
 ]
 
 SCRIPT_STEALTH_ANTIDETECCION = """
@@ -191,7 +162,8 @@ class AbueloGestorPlataformasMultiplex:
             contexto = await self._playwright.chromium.launch_persistent_context(
                 user_data_dir=str(dir_perfil_telegram),
                 headless=self._headless,
-                no_viewport=True,
+                no_viewport=True if not self._headless else False,
+                viewport={"width": 1440, "height": 900} if self._headless else None,
                 user_agent=config.get("user_agent", ""),
                 locale="es-MX",
                 args=ARGUMENTOS_ANTIBLOQUEO_CHROMIUM,
@@ -283,54 +255,20 @@ class AbueloGestorPlataformasMultiplex:
             print(f"[MULTIPLEX] {len(cookies_sanitizadas)} cookies inyectadas en contexto de {plataforma}.")
 
     def verificar_estado_autenticacion_cookies(self, plataforma: str) -> Dict:
-        """
-        Verifica el estado de autenticación y validez del archivo de cookies de una plataforma.
-
-        Args:
-            plataforma: Nombre de la plataforma ('youtube', 'tiktok', 'facebook', 'instagram').
-
-        Returns:
-            Dict con: {plataforma: str, existe: bool, cookies_validas: int, estado: str, mensaje: str}
-        """
-        config = CONFIGURACION_PLATAFORMAS.get(plataforma, {})
-        if not config:
+        """Verifica el estado y validez del archivo de cookies de una plataforma."""
+        cfg = CONFIGURACION_PLATAFORMAS.get(plataforma, {})
+        if not cfg:
             return {"plataforma": plataforma, "existe": False, "cookies_validas": 0, "estado": "ERROR", "mensaje": "Plataforma no soportada"}
 
-        ruta_cookies = self._dir_config / config.get("nombre_cookies", "")
-        if not ruta_cookies.exists():
-            return {
-                "plataforma": plataforma,
-                "existe": False,
-                "cookies_validas": 0,
-                "estado": "REQUERIDO",
-                "mensaje": f"Sin archivo {config.get('nombre_cookies', '')} en config/"
-            }
+        ruta = self._dir_config / cfg.get("nombre_cookies", "")
+        if not ruta.exists():
+            return {"plataforma": plataforma, "existe": False, "cookies_validas": 0, "estado": "REQUERIDO", "mensaje": f"Sin archivo {cfg.get('nombre_cookies', '')}"}
 
         try:
-            with open(ruta_cookies, "r", encoding="utf-8") as archivo:
-                cookies_raw = json.load(archivo)
-            validas = [c for c in cookies_raw if "name" in c and "value" in c]
-            if validas:
-                return {
-                    "plataforma": plataforma,
-                    "existe": True,
-                    "cookies_validas": len(validas),
-                    "estado": "ACTIVO",
-                    "mensaje": f"{len(validas)} cookies cargadas"
-                }
-            else:
-                return {
-                    "plataforma": plataforma,
-                    "existe": True,
-                    "cookies_validas": 0,
-                    "estado": "INVALIDO",
-                    "mensaje": "Archivo JSON existe pero no contiene cookies válidas"
-                }
+            with open(ruta, "r", encoding="utf-8") as f:
+                validas = [c for c in json.load(f) if "name" in c and "value" in c]
+            st = "ACTIVO" if validas else "INVALIDO"
+            msg = f"{len(validas)} cookies cargadas" if validas else "Sin cookies válidas"
+            return {"plataforma": plataforma, "existe": True, "cookies_validas": len(validas), "estado": st, "mensaje": msg}
         except Exception as err:
-            return {
-                "plataforma": plataforma,
-                "existe": True,
-                "cookies_validas": 0,
-                "estado": "ERROR",
-                "mensaje": f"Error al leer JSON de cookies: {err}"
-            }
+            return {"plataforma": plataforma, "existe": True, "cookies_validas": 0, "estado": "ERROR", "mensaje": f"Error: {err}"}

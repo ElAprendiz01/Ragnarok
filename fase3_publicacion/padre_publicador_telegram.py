@@ -13,7 +13,7 @@ import asyncio
 import re
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Callable
 from playwright.async_api import Page, BrowserContext
 
 if sys.platform == "win32":
@@ -24,6 +24,7 @@ if sys.platform == "win32":
         pass
 
 from fase3_publicacion.hijo_inyector_de_metadatos_y_carga import HijoInyectorDeMetadatosYCarga
+from fase3_publicacion.hijo_monitor_transferencia_telegram import HijoMonitorTransferenciaTelegram
 
 
 class PadrePublicadorTelegram:
@@ -33,6 +34,15 @@ class PadrePublicadorTelegram:
 
     def __init__(self, inyector: HijoInyectorDeMetadatosYCarga) -> None:
         self._inyector = inyector
+        self._monitor = HijoMonitorTransferenciaTelegram()
+
+    def _notificar(self, nivel: str, mensaje: str, callback: Optional[Callable[[str, str], None]] = None) -> None:
+        print(f"[TELEGRAM] [{nivel}] {mensaje}")
+        if callback:
+            try:
+                callback(nivel, f"[TELEGRAM] {mensaje}")
+            except Exception:
+                pass
 
     async def iniciar_flujo_subida(
         self,
@@ -42,15 +52,16 @@ class PadrePublicadorTelegram:
         descripcion: str,
         canal_target: str = "",
         numero_parte: int = 1,
+        callback_log: Optional[Callable[[str, str], None]] = None,
     ) -> bool:
         """Navega a Telegram Web, abre el canal objetivo y sube el video HD."""
         pagina: Page = contexto.pages[0] if contexto.pages else await contexto.new_page()
         try:
-            print(f"[TELEGRAM] Cargando Telegram Web ({self.URL_BASE})...")
+            self._notificar("INFO", f"Cargando Telegram Web ({self.URL_BASE})...", callback_log)
             try:
                 await pagina.goto(self.URL_BASE, wait_until="domcontentloaded", timeout=25_000)
             except Exception:
-                print("[TELEGRAM] Fallback a Telegram Web K...")
+                self._notificar("INFO", "Fallback a Telegram Web K...", callback_log)
                 await pagina.goto("https://web.telegram.org/k/", wait_until="domcontentloaded", timeout=25_000)
 
             await self._esperar_renderizado(pagina)
@@ -58,18 +69,18 @@ class PadrePublicadorTelegram:
             # Verificar login
             login = pagina.locator("button:has-text('Log in'), .login-title, canvas.qr-canvas, input[name='phone_number']")
             if await login.count() > 0 and await login.first.is_visible():
-                print("[TELEGRAM] [!] Sesión no iniciada en Telegram Web.")
+                self._notificar("WARN", "Sesión no iniciada en Telegram Web.", callback_log)
                 return False
 
             # Paso 1: Abrir canal objetivo
             if not await self._abrir_canal_objetivo(pagina, canal_target):
-                print(f"[TELEGRAM] [!] No se pudo abrir el canal: {canal_target}")
+                self._notificar("ERROR", f"No se pudo abrir el canal: {canal_target}", callback_log)
                 return False
 
             # Paso 2: Adjuntar video HD con FileChooser
-            print(f"[TELEGRAM] Adjuntando video HD: {ruta_video.name}...")
+            self._notificar("INFO", f"Adjuntando video HD: {ruta_video.name}...", callback_log)
             if not await self._adjuntar_video_hd(pagina, ruta_video):
-                print(f"[TELEGRAM] [!] Fallo al adjuntar archivo de video.")
+                self._notificar("ERROR", "Fallo al adjuntar archivo de video.", callback_log)
                 return False
 
             # Paso 3: Inyectar caption en el modal de confirmación
@@ -78,24 +89,49 @@ class PadrePublicadorTelegram:
 
             # Paso 4: Confirmar y enviar
             if not await self._confirmar_envio_modal(pagina):
-                print("[TELEGRAM] [!] No se pudo confirmar el envío en el modal.")
+                self._notificar("ERROR", "No se pudo confirmar el envío en el modal.", callback_log)
                 return False
 
-            # Paso 5: Monitorear subida real al servidor
-            exito_subida = await self.validar_estado_procesamiento_plataforma(pagina, titulo)
+            # Paso 5: Monitorear subida real en el DOM con el monitor de transferencia
+            exito_subida = await self._monitor.esperar_subida_individual(
+                pagina=pagina,
+                titulo=titulo,
+                timeout_seg=1800,
+                callback_log=callback_log,
+            )
+
             if exito_subida:
-                print(f"[TELEGRAM] [✓] Video HD publicado exitosamente en: {canal_target}")
+                self._notificar("OK", f"Video HD publicado exitosamente en: {canal_target}", callback_log)
                 return True
             else:
-                print(f"[TELEGRAM] [✗] No se pudo confirmar la subida completa del video.")
+                self._notificar("ERROR", "No se pudo confirmar la subida completa del video.", callback_log)
                 return False
 
         except Exception as error:
-            print(f"[TELEGRAM] [ERROR] Excepción en subida: {error}")
+            self._notificar("ERROR", f"Excepción en subida: {error}", callback_log)
             return False
         finally:
             if not pagina.is_closed():
-                await pagina.close()
+                await self._monitor.autorizar_cierre_navegador(pagina)
+
+    async def esperar_subida_lote(
+        self,
+        pagina: Page,
+        cantidad_videos: int,
+        timeout_seg: int = 3600,
+        callback_log: Optional[Callable[[str, str], None]] = None,
+    ) -> bool:
+        """Supervisa que un lote completo de videos finalice antes de cerrar sesión."""
+        return await self._monitor.esperar_subida_lote(
+            pagina=pagina,
+            cantidad_videos=cantidad_videos,
+            timeout_seg=timeout_seg,
+            callback_log=callback_log,
+        )
+
+    async def autorizar_cierre_navegador(self, pagina: Page) -> bool:
+        """Verifica si es seguro cerrar Chromium sin interrumpir subidas."""
+        return await self._monitor.autorizar_cierre_navegador(pagina)
 
     async def _esperar_renderizado(self, pagina: Page) -> bool:
         """Espera a que cargue la interfaz principal de Telegram."""
@@ -164,7 +200,7 @@ class PadrePublicadorTelegram:
 
                 hdr = pagina.locator(".top-bar .title, .MiddleHeader .title, .ChatInfo .title").first
                 if await hdr.count() > 0 and await hdr.is_visible():
-                    print(f"[TELEGRAM] [✓] Canal abierto: '{await hdr.inner_text()}'")
+                    print(f"[TELEGRAM] [OK] Canal abierto: '{await hdr.inner_text()}'")
                     return True
                 return True
 
@@ -202,10 +238,10 @@ class PadrePublicadorTelegram:
 
             file_chooser = await fc_info.value
             await file_chooser.set_files(ruta_abs)
-            print(f"[TELEGRAM] [✓] Archivo entregado al FileChooser: {ruta_video.name}")
+            print(f"[TELEGRAM] [OK] Archivo entregado al FileChooser: {ruta_video.name}")
 
             # Esperar apertura del modal de confirmación
-            await pagina.wait_for_selector(".modal-dialog", state="visible", timeout=12_000)
+            await pagina.wait_for_selector(".modal-dialog, div[class*='Modal'], .popup", state="visible", timeout=45_000)
             await asyncio.sleep(1.0)
             return True
 
@@ -215,16 +251,16 @@ class PadrePublicadorTelegram:
 
     def _formatear_caption(self, titulo: str, descripcion: str, numero_parte: int) -> str:
         parte_txt = f" (Parte {numero_parte})" if numero_parte > 1 else ""
-        caption = f"🎬 {titulo}{parte_txt}\n\n"
+        caption = f"{titulo}{parte_txt}\n\n"
         if descripcion:
-            caption += f"📝 {descripcion}\n\n"
-        caption += "🍿 ¡Disfrútala en HD!"
+            caption += f"{descripcion}\n\n"
+        caption += "Disponible en HD"
         return caption.strip()
 
     async def _inyectar_caption(self, pagina: Page, caption: str) -> None:
         """Pega el caption en el editor tip-tap / ProseMirror del modal."""
         try:
-            portals = pagina.locator("#portals .modal-dialog, .modal-dialog").first
+            portals = pagina.locator("#portals .modal-dialog, .modal-dialog, div[class*='Modal']").first
             caption_box = portals.locator("div[contenteditable='true'], .ProseMirror, .tiptap").first
             if await caption_box.is_visible():
                 await caption_box.click()
@@ -237,7 +273,7 @@ class PadrePublicadorTelegram:
     async def _confirmar_envio_modal(self, pagina: Page) -> bool:
         """Hace clic en el botón primario de enviar del modal y espera su cierre."""
         try:
-            portals = pagina.locator("#portals .modal-dialog, .modal-dialog").first
+            portals = pagina.locator("#portals .modal-dialog, .modal-dialog, div[class*='Modal']").first
             btn_send = portals.locator("button.primary, button.Button.primary, button.smaller.primary, button:has(.icon-new-send)").first
             if await btn_send.is_visible():
                 print("[TELEGRAM] Confirmando envío del video...")
@@ -246,49 +282,16 @@ class PadrePublicadorTelegram:
                 await pagina.keyboard.press("Enter")
 
             # Esperar cierre del modal confirmando inicio de transmisión
-            await pagina.wait_for_selector(".modal-dialog", state="detached", timeout=20_000)
-            print("[TELEGRAM] [✓] Modal confirmado y cerrado.")
+            try:
+                await pagina.wait_for_selector(".modal-dialog, div[class*='Modal'], .popup", state="detached", timeout=25_000)
+            except Exception:
+                pass
+            print("[TELEGRAM] [OK] Modal confirmado y transmisión en curso.")
             return True
         except Exception as err:
             print(f"[TELEGRAM] Error al confirmar envío: {err}")
             return False
 
     async def validar_estado_procesamiento_plataforma(self, pagina: Page, titulo: str = "", timeout_seg: int = 600) -> bool:
-        """Monitorea progreso de subida real hasta confirmación en el chat."""
-        try:
-            print("[TELEGRAM] Monitoreando transmisión y estado del video...")
-            progreso = pagina.locator(".progress-circle, .icon-progress, .upload-progress, .radial-progress, button[title*='Cancel']")
-            transcurrido = 0
-            intervalo = 2
-            subida_activa = False
-
-            while transcurrido < timeout_seg:
-                await asyncio.sleep(intervalo)
-                transcurrido += intervalo
-
-                cant_prog = await progreso.count()
-                hay_prog = any([await progreso.nth(i).is_visible() for i in range(cant_prog)]) if cant_prog > 0 else False
-
-                if hay_prog:
-                    subida_activa = True
-                    if transcurrido % 6 == 0:
-                        print(f"[TELEGRAM] Subiendo video... ({transcurrido}s)")
-                else:
-                    if subida_activa:
-                        print(f"[TELEGRAM] [✓] Carga completada al 100% ({transcurrido}s).")
-                        return True
-                    elif transcurrido >= 6:
-                        # Verificar si el mensaje ya está visible en el historial
-                        filtro = titulo[:20] if titulo else "🎬"
-                        msg = pagina.locator(f".Message:has-text('{filtro}'), .message-content:has-text('{filtro}')").last
-                        if await msg.count() > 0 and await msg.is_visible():
-                            print(f"[TELEGRAM] [✓] Mensaje verificado en el canal ({transcurrido}s).")
-                            return True
-                        if transcurrido >= 20:
-                            print(f"[TELEGRAM] [✓] Transmisión procesada sin anomalías ({transcurrido}s).")
-                            return True
-
-            return False
-        except Exception as error:
-            print(f"[TELEGRAM] Error durante monitoreo de subida: {error}")
-            return False
+        """Monitorea progreso delegando al supervisor de transferencias."""
+        return await self._monitor.esperar_subida_individual(pagina, titulo=titulo, timeout_seg=timeout_seg)

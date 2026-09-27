@@ -37,11 +37,11 @@ class PadrePublicadorTikTok:
             if exito:
                 valido = await self.validar_estado_procesamiento_plataforma(pagina)
                 if valido:
-                    print(f"[TK] [✓] Video publicado y verificado en TikTok: {ruta_clip.name}")
+                    print(f"[TK] [OK] Video publicado y verificado en TikTok: {ruta_clip.name}")
                 else:
-                    print(f"[TK] [✓] Video publicado en TikTok: {ruta_clip.name}")
+                    print(f"[TK] [OK] Video publicado en TikTok: {ruta_clip.name}")
             else:
-                print(f"[TK] [✗] Fallo al publicar en TikTok: {ruta_clip.name}")
+                print(f"[TK] [ERROR] Fallo al publicar en TikTok: {ruta_clip.name}")
 
             return exito
 

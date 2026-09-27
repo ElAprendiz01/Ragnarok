@@ -40,9 +40,26 @@ def escribir_log(nivel: str, mensaje: str) -> None:
         f.write(f"{estampa} ||| {nivel} ||| {mensaje}\n")
 
 
+_CACHE_LINEAS = {}
+
+
 def contar_lineas(ruta: Path) -> int:
-    """Cuenta las líneas no vacías de un archivo de texto."""
+    """Cuenta las líneas no vacías de un archivo de texto con caché mtime (Zero I/O Churn)."""
     if not ruta.exists():
         return 0
-    with open(ruta, "r", encoding="utf-8", errors="ignore") as f:
-        return sum(1 for l in f if l.strip())
+    try:
+        stat = ruta.stat()
+        mtime = stat.st_mtime
+        size = stat.st_size
+        clave = str(ruta.resolve())
+        cache = _CACHE_LINEAS.get(clave)
+        if cache and cache["mtime"] == mtime and cache["size"] == size:
+            return cache["conteo"]
+
+        with open(ruta, "r", encoding="utf-8", errors="ignore") as f:
+            total = sum(1 for l in f if l.strip())
+
+        _CACHE_LINEAS[clave] = {"mtime": mtime, "size": size, "conteo": total}
+        return total
+    except Exception:
+        return 0

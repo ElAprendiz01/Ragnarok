@@ -67,11 +67,11 @@ class PadrePublicadorYouTube:
             if exito:
                 valido = await self.validar_estado_procesamiento_plataforma(pagina)
                 if valido:
-                    print(f"[YT] [✓] Video publicado y confirmado en YouTube: {ruta_clip.name}")
+                    print(f"[YT] [OK] Video publicado y confirmado en YouTube: {ruta_clip.name}")
                 else:
-                    print(f"[YT] [✓] Video subido a YouTube (confirmación visual primaria OK): {ruta_clip.name}")
+                    print(f"[YT] [OK] Video subido a YouTube (confirmación visual primaria OK): {ruta_clip.name}")
             else:
-                print(f"[YT] [✗] Fallo al publicar: {ruta_clip.name}")
+                print(f"[YT] [ERROR] Fallo al publicar: {ruta_clip.name}")
 
             return exito
 

@@ -67,6 +67,7 @@ class PadreCalculadoraDeSegmentos:
             print(f"[CALC] Video no encontrado: {ruta_video}")
             return None
 
+        # 1. Intento primario: ffprobe nativo
         comando = [
             "ffprobe",
             "-v", "quiet",
@@ -79,32 +80,61 @@ class PadreCalculadoraDeSegmentos:
                 comando,
                 capture_output=True,
                 text=True,
-                timeout=30,
+                timeout=15,
                 encoding="utf-8",
                 shell=False,
             )
-            if resultado.returncode != 0:
-                print(f"[CALC] [ERROR] ffprobe retornó código {resultado.returncode}: {resultado.stderr[:200]}")
-                return None
+            if resultado.returncode == 0:
+                datos = json.loads(resultado.stdout)
+                duracion_str = datos.get("format", {}).get("duration", None)
+                if duracion_str is not None:
+                    duracion = float(duracion_str)
+                    print(f"[CALC] Duración detectada vía ffprobe: {duracion:.2f}s ({self._segundos_a_hms(duracion)})")
+                    return duracion
+        except Exception:
+            pass
 
-            datos = json.loads(resultado.stdout)
-            duracion_str = datos.get("format", {}).get("duration", None)
-            if duracion_str is None:
-                print("[CALC] [ERROR] ffprobe no retornó duración en el formato.")
-                return None
+        # 2. Fallback ultra rápido: metadata.json generado en descarga (0ms, Zero RAM)
+        meta_ruta = ruta_video.parent / "metadata.json"
+        if meta_ruta.exists():
+            try:
+                with open(meta_ruta, "r", encoding="utf-8") as f_meta:
+                    datos_meta = json.load(f_meta)
+                dur = float(datos_meta.get("duracion_segundos", 0))
+                if dur > 0:
+                    print(f"[CALC] [OK] Duración desde metadata.json: {dur:.2f}s ({self._segundos_a_hms(dur)})")
+                    return dur
+            except Exception:
+                pass
 
-            duracion = float(duracion_str)
-            print(f"[CALC] Duración detectada: {duracion:.2f}s ({self._segundos_a_hms(duracion)})")
-            return duracion
+        # 3. Fallback secundario: FFmpeg nativo/imageio_ffmpeg
+        bin_ff = self._resolver_binario_ffmpeg()
+        if bin_ff:
+            try:
+                import re
+                res = subprocess.run([bin_ff, "-i", str(ruta_video)], capture_output=True, text=True, timeout=15)
+                m = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", res.stderr)
+                if m:
+                    h, m_val, s = m.groups()
+                    dur = int(h) * 3600 + int(m_val) * 60 + float(s)
+                    print(f"[CALC] [OK] Duración vía FFmpeg: {dur:.2f}s ({self._segundos_a_hms(dur)})")
+                    return dur
+            except Exception:
+                pass
 
-        except subprocess.TimeoutExpired:
-            print("[CALC] [ERROR] ffprobe superó el timeout de 30 segundos.")
-            return None
-        except FileNotFoundError:
-            print("[CALC] [ERROR] Binario 'ffprobe' no encontrado. Instalar FFmpeg y añadir al PATH.")
-            return None
-        except (json.JSONDecodeError, ValueError, KeyError) as error:
-            print(f"[CALC] [ERROR] Error al parsear salida de ffprobe: {error}")
+        print(f"[CALC] [ERROR] No se pudo determinar la duración de: {ruta_video.name}")
+        return None
+
+    @staticmethod
+    def _resolver_binario_ffmpeg() -> Optional[str]:
+        """Localiza el ejecutable de FFmpeg en PATH o imageio_ffmpeg."""
+        import shutil
+        if shutil.which("ffmpeg"):
+            return "ffmpeg"
+        try:
+            import imageio_ffmpeg
+            return imageio_ffmpeg.get_ffmpeg_exe()
+        except Exception:
             return None
 
     # ------------------------------------------------------------------

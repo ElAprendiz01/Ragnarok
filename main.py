@@ -55,9 +55,9 @@ def ejecutar_fase_2() -> None:
     orquestador.ejecutar_fase_2()
 
 
-async def ejecutar_fase_3(plataforma: Optional[str] = None) -> None:
+async def ejecutar_fase_3(plataforma: Optional[str] = None, headless: Optional[bool] = None) -> None:
     """Lanza la Fase 3: Publicación & Limpieza Cascade."""
-    orquestador = OrquestadorPublicacionesPrincipal(ruta_config=RUTA_CONFIG)
+    orquestador = OrquestadorPublicacionesPrincipal(ruta_config=RUTA_CONFIG, headless=headless)
     await orquestador.ejecutar_fase_3(plataforma_filtro=plataforma)
 
 
@@ -87,6 +87,7 @@ Ejemplos de uso:
   python main.py --fase 2         Solo Fase 2 (Edición)
   python main.py --fase 3         Solo Fase 3 (Publicación)
   python main.py --fase 3 --plataforma telegram  Publicar solo en Telegram
+  python main.py --fase 3 --plataforma telegram --headless  Publicar en Telegram en modo invisible
         """
     )
     parser.add_argument(
@@ -108,6 +109,18 @@ Ejemplos de uso:
         choices=["youtube", "tiktok", "facebook", "instagram", "telegram"],
         help="En Fase 3, filtra la publicación únicamente hacia la red social especificada.",
     )
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        default=None,
+        help="Forzar modo invisible (headless).",
+    )
+    parser.add_argument(
+        "--visible",
+        action="store_true",
+        default=None,
+        help="Forzar modo visible (con ventana de Chromium).",
+    )
     return parser
 
 
@@ -118,6 +131,7 @@ async def main() -> None:
     args = parser.parse_args()
 
     fases_a_ejecutar = sorted(set(args.fase)) if args.fase else [1, 2, 3]
+    headless = True if args.headless else (False if args.visible else None)
     print(f"[MAIN] Fases a ejecutar: {fases_a_ejecutar}\n")
 
     for fase in fases_a_ejecutar:
@@ -126,7 +140,7 @@ async def main() -> None:
         elif fase == 2:
             ejecutar_fase_2()
         elif fase == 3:
-            await ejecutar_fase_3(plataforma=args.plataforma)
+            await ejecutar_fase_3(plataforma=args.plataforma, headless=headless)
         if fase != fases_a_ejecutar[-1]:
             print("\n" + "—"*60 + "\n")
 

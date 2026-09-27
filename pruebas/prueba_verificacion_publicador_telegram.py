@@ -30,15 +30,15 @@ class PruebaVerificacionPublicadorTelegram(unittest.TestCase):
         self.publicador = PadrePublicadorTelegram(self.inyector)
 
     def test_formateo_de_caption(self) -> None:
-        """Verifica que el formateo del caption contenga los sufijos y emojis esperados."""
+        """Verifica que el formateo del caption contenga los sufijos esperados sin emojis."""
         caption = self.publicador._formatear_caption(
             titulo="Película de Prueba",
             descripcion="Una película excelente",
             numero_parte=2
         )
-        self.assertIn("🎬 Película de Prueba (Parte 2)", caption)
-        self.assertIn("📝 Una película excelente", caption)
-        self.assertIn("🍿 ¡Disfrútala en HD!", caption)
+        self.assertIn("Película de Prueba (Parte 2)", caption)
+        self.assertIn("Una película excelente", caption)
+        self.assertIn("Disponible en HD", caption)
 
     def test_disponibilidad_metodo_drag_and_drop(self) -> None:
         """Verifica que el método auxiliar simular_drag_and_drop_archivo exista y sea invocable."""

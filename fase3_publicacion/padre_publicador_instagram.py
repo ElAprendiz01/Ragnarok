@@ -42,11 +42,11 @@ class PadrePublicadorInstagram:
             if exito:
                 valido = await self.validar_estado_procesamiento_plataforma(pagina)
                 if valido:
-                    print(f"[IG] [✓] Reel publicado y verificado en Instagram: {ruta_clip.name}")
+                    print(f"[IG] [OK] Reel publicado y verificado en Instagram: {ruta_clip.name}")
                 else:
-                    print(f"[IG] [✓] Reel publicado en Instagram: {ruta_clip.name}")
+                    print(f"[IG] [OK] Reel publicado en Instagram: {ruta_clip.name}")
             else:
-                print(f"[IG] [✗] Fallo al publicar en Instagram: {ruta_clip.name}")
+                print(f"[IG] [ERROR] Fallo al publicar en Instagram: {ruta_clip.name}")
 
             return exito
 

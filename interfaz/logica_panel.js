@@ -59,8 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
     v.addEventListener('timeupdate', updateProgress);
     v.addEventListener('loadedmetadata', onVideoLoaded);
     v.addEventListener('ended', () => { pipNext(); });
-    v.addEventListener('play', () => { document.getElementById('pip-play-btn').textContent = '⏸'; });
-    v.addEventListener('pause', () => { document.getElementById('pip-play-btn').textContent = '▶'; });
+    v.addEventListener('play', () => { const b = document.getElementById('pip-play-btn'); if(b) b.innerHTML = '<img src="iconos/pausa.svg" class="icono-svg-sm" />'; });
+    v.addEventListener('pause', () => { const b = document.getElementById('pip-play-btn'); if(b) b.innerHTML = '<img src="iconos/play.svg" class="icono-svg-sm" />'; });
   }
 
   // Eventos del video Estudio
@@ -69,8 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ve.addEventListener('timeupdate', estudioUpdateProgress);
     ve.addEventListener('loadedmetadata', estudioOnVideoLoaded);
     ve.addEventListener('ended', () => { estudioNext(); });
-    ve.addEventListener('play', () => { const b = document.getElementById('estudio-play-btn'); if(b) b.textContent = '⏸'; });
-    ve.addEventListener('pause', () => { const b = document.getElementById('estudio-play-btn'); if(b) b.textContent = '▶'; });
+    ve.addEventListener('play', () => { const b = document.getElementById('estudio-play-btn'); if(b) b.innerHTML = '<img src="iconos/pausa.svg" class="icono-svg-sm" />'; });
+    ve.addEventListener('pause', () => { const b = document.getElementById('estudio-play-btn'); if(b) b.innerHTML = '<img src="iconos/play.svg" class="icono-svg-sm" />'; });
   }
 
   // Drag del PiP
@@ -162,15 +162,24 @@ async function cargarGaleriaDesdeServidor() {
   } catch(e) {}
 }
 
-async function ejecutarPublicacionIndividual(plat) {
-  mostrarToast('info', `🚀 Iniciando publicación individual en ${plat.toUpperCase()}...`);
+async function ejecutarPublicacionIndividual(plat, modoBrowser = 'visible') {
+  const isHeadless = (modoBrowser === 'headless' || modoBrowser === 'invisible');
+  const etiquetaModo = isHeadless ? 'Modo Invisible (Headless)' : 'Modo Visible (Headed)';
+  mostrarToast('info', `Iniciando publicación en ${plat.toUpperCase()} (${etiquetaModo})...`);
   try {
-    const res = await fetch(API_BASE + '/ejecutar/publicar/' + plat, { method: 'POST' });
+    const res = await fetch(API_BASE + '/ejecutar/publicar/' + plat, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modo_browser: modoBrowser,
+        headless: isHeadless
+      })
+    });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('success', `✅ Publicación en ${plat.toUpperCase()} lanzada en segundo plano.`);
+      mostrarToast('success', `Publicación en ${plat.toUpperCase()} lanzada en segundo plano (${etiquetaModo}).`);
       App.fases[3] = 'running';
-      setFaseUI(3, 'running', `⚙ Publicando (${plat.toUpperCase()})...`);
+      setFaseUI(3, 'running', `Publicando (${plat.toUpperCase()})...`);
       document.getElementById('fc3')?.classList.add('active-c');
       setSysUI('running', `Publicación en ${plat.toUpperCase()} en ejecución`);
     } else {
@@ -182,12 +191,12 @@ async function ejecutarPublicacionIndividual(plat) {
 }
 
 async function iniciarSesionTelegramWeb() {
-  mostrarToast('info', '🔑 Abriendo navegador Chromium visible para iniciar/guardar sesión de Telegram Web...');
+  mostrarToast('info', 'Abriendo navegador Chromium visible para iniciar/guardar sesión de Telegram Web...');
   try {
     const res = await fetch(API_BASE + '/auth/telegram', { method: 'POST' });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('success', '🌐 Ventana de Telegram abierta. Inicia sesión y cierra la ventana para guardar el perfil.');
+      mostrarToast('success', 'Ventana de Telegram abierta. Inicia sesión y cierra la ventana para guardar el perfil.');
     } else {
       mostrarToast('error', `Error: ${data.error}`);
     }
@@ -213,7 +222,7 @@ async function guardarCanalTelegram() {
   if (!input) return;
   const canalRaw = input.value.trim();
   if (!canalRaw) {
-    mostrarToast('warning', '⚠️ Escribe el nombre, handle o URL del canal de Telegram.');
+    mostrarToast('warning', 'Escribe el nombre, handle o URL del canal de Telegram.');
     return;
   }
   await agregarYGuardarCanalTelegram(canalRaw);
@@ -285,8 +294,8 @@ function actualizarVistasCanalTelegram() {
     if (selDropdown) {
       selDropdown.innerHTML = `
         <option value="">-- Elige un canal guardado (${canales.length}) --</option>
-        ${canales.map(c => `<option value="${escapeHtml(c)}" ${c === canalActivo ? 'selected' : ''}>${escapeHtml(c)} ${c === canalActivo ? '★ (Seleccionado)' : ''}</option>`).join('')}
-        <option value="__nuevo__">➕ Escribir otro canal nuevo...</option>
+        ${canales.map(c => `<option value="${escapeHtml(c)}" ${c === canalActivo ? 'selected' : ''}>${escapeHtml(c)} ${c === canalActivo ? '(Activo)' : ''}</option>`).join('')}
+        <option value="__nuevo__">+ Escribir otro canal nuevo...</option>
       `;
     }
     if (chipsContainer) chipsContainer.style.display = 'block';
@@ -309,7 +318,8 @@ function actualizarVistasCanalTelegram() {
       const isActivo = c === canalActivo;
       return `
         <span class="tech-chip" style="cursor:pointer;background:${isActivo ? 'rgba(0,210,255,0.18)' : 'var(--bg2)'};border-color:${isActivo ? 'var(--cyan)' : 'var(--border)'};display:inline-flex;align-items:center;gap:5px;padding:3px 8px" onclick="seleccionarCanalDeLista('${escapeHtml(c)}')">
-          <span style="color:${isActivo ? 'var(--cyan)' : 'var(--txt1)'}">${isActivo ? '✓ ' : ''}${escapeHtml(c)}</span>
+          <img src="iconos/telegram.svg" class="icono-svg-sm" style="width:11px;height:11px" />
+          <span style="color:${isActivo ? 'var(--cyan)' : 'var(--txt1)'}">${escapeHtml(c)}</span>
           <span style="color:var(--txt3);font-size:11px;margin-left:3px;cursor:pointer" title="Eliminar canal de la lista" onclick="event.stopPropagation();eliminarCanalTelegram('${escapeHtml(c)}')">✕</span>
         </span>
       `;
@@ -338,7 +348,7 @@ async function guardarCanalRapidoModal() {
   if (!inputPub) return;
   const val = inputPub.value.trim();
   if (!val) {
-    mostrarToast('warning', '⚠️ Escribe un canal de Telegram.');
+    mostrarToast('warning', 'Escribe un canal de Telegram.');
     return;
   }
   await agregarYGuardarCanalTelegram(val);
@@ -364,7 +374,7 @@ async function agregarYGuardarCanalTelegram(canalRaw) {
     });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('success', `💾 Canal guardado: ${canalNorm}`);
+      mostrarToast('success', `Canal guardado: ${canalNorm}`);
       addLog('ok', `Canal de Telegram guardado: <span class="hl">${canalNorm}</span>`);
     }
   } catch(e) {}
@@ -407,6 +417,122 @@ function abrirModalTelegramManual() {
   abrirModal('m-telegram-manual');
 }
 
+function abrirModalTelegramLotes() {
+  const modal = document.getElementById('m-telegram-lotes');
+  if (!modal) return;
+  const inputCanal = document.getElementById('m-tg-lote-canal');
+  const canalActual = document.getElementById('lbl-canal-tg')?.textContent || '';
+  if (inputCanal) {
+    inputCanal.value = (canalActual && canalActual !== 'Sin canal configurado') ? canalActual : (App.canalTelegramActivo || (App.canalesTelegram && App.canalesTelegram[0]) || '');
+  }
+  const elCant = document.getElementById('m-tg-lote-cant-videos');
+  if (elCant) {
+    const total = (App.galeria && App.galeria.length) || 0;
+    elCant.textContent = `${total} video(s) disponibles`;
+  }
+  abrirModal('m-telegram-lotes');
+}
+
+async function guardarCanalTelegramModalLote() {
+  const input = document.getElementById('m-tg-lote-canal');
+  if (!input) return;
+  const canalRaw = input.value.trim();
+  if (!canalRaw) {
+    mostrarToast('warning', 'Escribe el nombre o handle del canal de Telegram.');
+    return;
+  }
+  await agregarYGuardarCanalTelegram(canalRaw);
+}
+
+let _intervaloSondeoLoteTelegram = null;
+
+function iniciarSondeoProgresoLoteTelegram() {
+  if (_intervaloSondeoLoteTelegram) clearInterval(_intervaloSondeoLoteTelegram);
+  _intervaloSondeoLoteTelegram = setInterval(async () => {
+    try {
+      const res = await fetch(API_BASE + '/api/publicar/lote/estado');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.ok) return;
+
+      const total = data.total || 0;
+      const completados = data.completados || 0;
+      const fallidos = data.fallidos || 0;
+      const pct = total > 0 ? Math.round(((completados + fallidos) / total) * 100) : 0;
+
+      const b = document.getElementById('f4b');
+      const p = document.getElementById('f4pct');
+      const fc = document.getElementById('f4c');
+      const fp = document.getElementById('f4p');
+
+      if (b) b.style.width = pct + '%';
+      if (p) p.textContent = pct + '%';
+      if (fc) fc.textContent = completados;
+      if (fp) fp.textContent = Math.max(0, total - completados);
+
+      if (!data.activo) {
+        clearInterval(_intervaloSondeoLoteTelegram);
+        _intervaloSondeoLoteTelegram = null;
+        if (completados > 0 || (total > 0 && fallidos === 0)) {
+          faseFin(4);
+          mostrarToast('success', `Lote finalizado: ${completados} video(s) subidos a Telegram.`);
+          addLog('ok', `Lote Telegram completado: <span class="hl">${completados}/${total}</span> videos subidos.`);
+        } else {
+          setFaseUI(4, 'idle', 'Inactiva');
+          App.fases[4] = 'idle';
+        }
+      }
+    } catch (e) {
+      // Manejo silencioso en sondeo recurrente
+    }
+  }, 2500);
+}
+
+async function iniciarPublicacionLoteTelegram() {
+  const canal = document.getElementById('m-tg-lote-canal')?.value.trim();
+  if (!canal) {
+    mostrarToast('warning', 'Por favor especifica un canal objetivo de Telegram.');
+    return;
+  }
+  const modoBrowser = document.getElementById('m-tg-lote-browser')?.value || 'visible';
+  const modoVideo = document.getElementById('m-tg-lote-modo-video')?.value || 'completo';
+
+  cerrarModal('m-telegram-lotes');
+  mostrarToast('info', `Iniciando publicación en lote para ${canal} (${modoBrowser.toUpperCase()})...`);
+  addLog('info', `Iniciando cola por lotes Telegram hacia <span class="hl">${escapeHtml(canal)}</span> (Modo: ${modoVideo}, Ventana: ${modoBrowser}).`);
+
+  App.fases[4] = 'running';
+  setFaseUI(4, 'running', 'Procesando cola en disco (Telegram)...');
+  document.getElementById('fc4')?.classList.add('active-c');
+  setSysUI('running', 'Publicación en lote Telegram en ejecución');
+
+  try {
+    const res = await fetch(API_BASE + '/api/publicar/lote/telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        canal: canal,
+        modo_browser: modoBrowser,
+        modo_video: modoVideo
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('success', 'Cola Zero-RAM iniciada en el servidor Python.');
+      iniciarSondeoProgresoLoteTelegram();
+    } else {
+      mostrarToast('error', `Error al iniciar lote: ${data.error}`);
+      addLog('err', `Error al iniciar lote de Telegram: ${data.error}`);
+      setFaseUI(4, 'idle', 'Inactiva');
+      App.fases[4] = 'idle';
+    }
+  } catch (err) {
+    mostrarToast('error', `Error al conectar con servidor: ${err.message}`);
+    setFaseUI(4, 'idle', 'Inactiva');
+    App.fases[4] = 'idle';
+  }
+}
+
 function abrirModal(id) {
   const m = document.getElementById(id);
   if (m) {
@@ -423,6 +549,123 @@ function cerrarModal(id) {
   }
 }
 
+/**
+ * Muestra un cuadro de confirmación modal interactivo de alta definición y estética Obsidian.
+ * Reemplaza los confirm/alert nativos con una experiencia visual profesional.
+ * Retorna una Promise<boolean> que resuelve a true al confirmar o false al cancelar.
+ */
+function mostrarModalConfirmacion({
+  tag = 'PURGA PERMANENTE DE DISCO',
+  titulo = '¿Eliminar Video y Metadatos JSON?',
+  subtitulo = 'Esta acción purgará físicamente el archivo original, todos los clips y la configuración JSON.',
+  itemTitulo = '',
+  itemId = '',
+  detalles = [],
+  nota = 'El espacio en disco se liberará de inmediato. Esta acción no se puede deshacer.',
+  textoConfirmar = 'Eliminar Permanentemente',
+  icono = 'eliminar.svg',
+  peligro = true
+} = {}) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('m-confirm-custom');
+    if (!overlay) {
+      resolve(window.confirm(`${titulo}\n\n${itemTitulo}\n\n${subtitulo}`));
+      return;
+    }
+
+    const elTag = document.getElementById('m-confirm-tag');
+    const elTitulo = document.getElementById('m-confirm-titulo');
+    const elSub = document.getElementById('m-confirm-sub');
+    const elItemTitulo = document.getElementById('m-confirm-item-titulo');
+    const elItemId = document.getElementById('m-confirm-item-id');
+    const elDetalles = document.getElementById('m-confirm-detalles');
+    const elNota = document.getElementById('m-confirm-nota');
+    const btnConfirm = document.getElementById('m-confirm-btn-action');
+    const btnCancel = document.getElementById('m-confirm-btn-cancel');
+    const elIcono = document.getElementById('m-confirm-icon-img');
+
+    if (elTag) elTag.textContent = tag;
+    if (elTitulo) elTitulo.textContent = titulo;
+    if (elSub) elSub.textContent = subtitulo;
+    if (elItemTitulo) elItemTitulo.textContent = itemTitulo || 'Elemento seleccionado';
+    if (elItemId) {
+      if (itemId) {
+        elItemId.textContent = `ID: ${itemId}`;
+        elItemId.style.display = 'inline-block';
+      } else {
+        elItemId.style.display = 'none';
+      }
+    }
+
+    if (elDetalles) {
+      if (detalles && detalles.length > 0) {
+        elDetalles.innerHTML = detalles.map(d => `
+          <div class="confirm-detail-row">
+            <span class="confirm-detail-bullet"></span>
+            <span class="confirm-detail-label">${escapeHtml(d.label || '')}:</span>
+            <span class="confirm-detail-desc">${escapeHtml(d.desc || '')}</span>
+          </div>
+        `).join('');
+        elDetalles.style.display = 'flex';
+      } else {
+        elDetalles.style.display = 'none';
+      }
+    }
+
+    if (elNota) elNota.textContent = nota;
+    if (elIcono && icono) elIcono.src = `iconos/${icono}`;
+    if (btnConfirm) {
+      btnConfirm.innerHTML = `<img src="iconos/${icono}" class="icono-svg-sm" /> ${escapeHtml(textoConfirmar)}`;
+    }
+
+    function cleanup() {
+      overlay.classList.remove('open');
+      document.removeEventListener('keydown', onKeyDown);
+      overlay.removeEventListener('click', onBackdropClick);
+      if (btnConfirm) btnConfirm.removeEventListener('click', onConfirm);
+      if (btnCancel) btnCancel.removeEventListener('click', onCancel);
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 240);
+    }
+
+    function onConfirm(e) {
+      if (e) e.stopPropagation();
+      cleanup();
+      resolve(true);
+    }
+
+    function onCancel(e) {
+      if (e) e.stopPropagation();
+      cleanup();
+      resolve(false);
+    }
+
+    function onBackdropClick(e) {
+      if (e.target === overlay) {
+        onCancel(e);
+      }
+    }
+
+    function onKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onCancel(e);
+      }
+    }
+
+    if (btnConfirm) btnConfirm.addEventListener('click', onConfirm, { once: true });
+    if (btnCancel) btnCancel.addEventListener('click', onCancel, { once: true });
+    overlay.addEventListener('click', onBackdropClick);
+    document.addEventListener('keydown', onKeyDown);
+
+    overlay.style.display = 'flex';
+    void overlay.offsetWidth; // Forzar repintado para transición CSS fluida
+    overlay.classList.add('open');
+    if (btnCancel) btnCancel.focus();
+  });
+}
+
 function renderListaVideosModalTelegram() {
   const contenedor = document.getElementById('m-tg-lista-videos');
   if (!contenedor) return;
@@ -434,6 +677,7 @@ function renderListaVideosModalTelegram() {
     <label style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer">
       <input type="checkbox" class="chk-tg-vid" value="${v.id}" data-num="${i+1}" checked>
       <span style="color:var(--cyan);font-weight:700">#${i+1}</span>
+      <img src="iconos/play.svg" class="icono-svg-sm" style="opacity:0.75" />
       <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.titulo}">${v.titulo}</span>
       <span style="color:var(--txt3);font-size:11px">${v.dur || 'Original'}</span>
     </label>
@@ -466,12 +710,46 @@ async function guardarCanalTelegramModal() {
 async function publicarSeleccionTelegramModal() {
   const seleccionados = Array.from(document.querySelectorAll('.chk-tg-vid:checked')).map(c => c.value);
   if (seleccionados.length === 0) {
-    mostrarToast('warning', '⚠️ Selecciona al menos un video por número o casilla.');
+    mostrarToast('warning', 'Selecciona al menos un video por número o casilla.');
     return;
   }
+  const modoBrowser = document.getElementById('m-tg-modo-browser')?.value || 'visible';
+  const canalInput = document.getElementById('m-tg-canal-input')?.value.trim() || App.canalTelegramActivo;
   cerrarModal('m-telegram-manual');
-  mostrarToast('info', `🚀 Iniciando publicación cautelosa de ${seleccionados.length} video(s) seleccionado(s) en Telegram Web...`);
-  await ejecutarPublicacionIndividual('telegram');
+
+  mostrarToast('info', `Iniciando cola de ${seleccionados.length} video(s) seleccionado(s) en Telegram Web...`);
+  addLog('info', `Iniciando cola de <span class="hl">${seleccionados.length}</span> videos seleccionados en Telegram hacia <span class="hl">${escapeHtml(canalInput || 'Canal Configurado')}</span>.`);
+
+  App.fases[4] = 'running';
+  setFaseUI(4, 'running', `Publicando selección (${seleccionados.length} videos)...`);
+  document.getElementById('fc4')?.classList.add('active-c');
+  setSysUI('running', 'Publicación manual Telegram en ejecución');
+
+  try {
+    const res = await fetch(API_BASE + '/api/publicar/lote/telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        canal: canalInput,
+        modo_browser: modoBrowser,
+        modo_video: 'completo',
+        ids: seleccionados
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('success', 'Cola de videos seleccionados iniciada en segundo plano.');
+      iniciarSondeoProgresoLoteTelegram();
+    } else {
+      mostrarToast('error', `Error: ${data.error}`);
+      setFaseUI(4, 'idle', 'Inactiva');
+      App.fases[4] = 'idle';
+    }
+  } catch(e) {
+    mostrarToast('error', 'Error al conectarse con el servidor Python.');
+    setFaseUI(4, 'idle', 'Inactiva');
+    App.fases[4] = 'idle';
+  }
 }
 
 
@@ -490,9 +768,9 @@ document.addEventListener('click', () => {
 // GALERÍA DE VIDEOS
 // ────────────────────────────────────────────
 const estadoBadge = {
-  descargado: { color:'var(--cyan)',   bc:'rgba(0,212,255,.3)',   bg:'rgba(0,212,255,.08)',   label:'⬇ Descargado' },
-  editado:    { color:'var(--purple)', bc:'rgba(168,85,247,.3)',  bg:'rgba(168,85,247,.08)',  label:'✂ Editado' },
-  publicado:  { color:'var(--green)',  bc:'rgba(34,211,160,.3)',  bg:'rgba(34,211,160,.08)',  label:'✓ Publicado' },
+  descargado: { color:'var(--cyan)',   bc:'rgba(0,212,255,.3)',   bg:'rgba(0,212,255,.08)',   label:'Descargado', ico:'descargar.svg' },
+  editado:    { color:'var(--purple)', bc:'rgba(168,85,247,.3)',  bg:'rgba(168,85,247,.08)',  label:'Editado',    ico:'cortar.svg' },
+  publicado:  { color:'var(--green)',  bc:'rgba(34,211,160,.3)',  bg:'rgba(34,211,160,.08)',  label:'Publicado',  ico:'check.svg' },
 };
 
 function renderGaleria(lista) {
@@ -509,9 +787,9 @@ function renderGaleria(lista) {
     return `
     <div class="gv-card" onclick="abrirEnEstudio(${i})" title="Reproducir y editar: ${tituloEsc}">
       <div class="gv-thumb">
-        🎬
+        <img src="iconos/play.svg" class="icono-svg-xl" />
         <div class="gv-play-overlay">
-          <div class="gv-play-btn">▶</div>
+          <div class="gv-play-btn"><img src="iconos/play.svg" class="icono-svg-sm" /></div>
         </div>
         <div class="gv-dur">${v.dur || '0:00'}</div>
         ${isNew ? '<div class="gv-new-badge">Nuevo</div>' : ''}
@@ -520,25 +798,25 @@ function renderGaleria(lista) {
         <div class="gv-title" title="${tituloEsc}">${tituloEsc}</div>
         <div class="gv-meta">
           <span class="gv-size">${v.tamano || ''} · ${v.partes || 1} partes</span>
-          <span style="color:${b.color};border-color:${b.bc};background:${b.bg};font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid">${b.label}</span>
+          <span style="color:${b.color};border-color:${b.bc};background:${b.bg};font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid;display:inline-flex;align-items:center;gap:3px"><img src="iconos/${b.ico}" class="icono-svg-sm" style="width:10px;height:10px" /> ${b.label}</span>
         </div>
         <div class="gv-actions">
-          <button class="btn bs bsm" style="flex:1;justify-content:center" onclick="event.stopPropagation();abrirEnEstudio(${i})">📺 Estudio</button>
+          <button class="btn bs bsm" style="flex:1;justify-content:center" onclick="event.stopPropagation();abrirEnEstudio(${i})"><img src="iconos/estudio.svg" class="icono-svg-sm" /> Estudio</button>
           
           <div class="dropdown" style="display:inline-block;position:relative">
-            <button class="btn bs bsm" onclick="event.stopPropagation();toggleDropMenu(this)">📤 Publicar ▾</button>
+            <button class="btn bs bsm" onclick="event.stopPropagation();toggleDropMenu(this)"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Publicar <img src="iconos/chevron_abajo.svg" class="icono-svg-sm" style="margin-left:2px;width:10px;height:10px" /></button>
             <div class="dropdown-content" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;z-index:99;min-width:170px;box-shadow:0 8px 24px rgba(0,0,0,.5);padding:4px 0">
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'telegram')">✈️ Solo Telegram (HD)</a>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'youtube')">▶️ Solo YouTube</a>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'tiktok')">🎵 Solo TikTok</a>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'facebook')">📘 Solo Facebook</a>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'instagram')">📸 Solo Instagram</a>
+              <a href="#" style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'telegram')"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Solo Telegram (HD)</a>
+              <a href="#" style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'youtube')"><img src="iconos/youtube.svg" class="icono-svg-sm" /> Solo YouTube</a>
+              <a href="#" style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'tiktok')"><img src="iconos/tiktok.svg" class="icono-svg-sm" /> Solo TikTok</a>
+              <a href="#" style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'facebook')"><img src="iconos/facebook.svg" class="icono-svg-sm" /> Solo Facebook</a>
+              <a href="#" style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;color:var(--txt1);text-decoration:none" onclick="event.preventDefault();event.stopPropagation();publicarVideoDesdeGaleria(${i}, 'instagram')"><img src="iconos/instagram.svg" class="icono-svg-sm" /> Solo Instagram</a>
               <div style="border-top:1px solid var(--border);margin:4px 0"></div>
-              <a href="#" style="display:block;padding:6px 12px;font-size:11px;color:var(--cyan);font-weight:700;text-decoration:none" onclick="event.preventDefault();event.stopPropagation();ejecutarFase(3)">🚀 Todas las Redes</a>
+              <a href="#" style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;color:var(--cyan);font-weight:700;text-decoration:none" onclick="event.preventDefault();event.stopPropagation();ejecutarFase(3)"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Todas las Redes</a>
             </div>
           </div>
 
-          <button class="btn bd bsm" onclick="event.stopPropagation();eliminarVideo(${i},this)">🗑</button>
+          <button class="btn bd bsm" onclick="event.stopPropagation();eliminarVideo(${i},this)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
         </div>
       </div>
     </div>`;
@@ -558,7 +836,7 @@ function renderColaVideosDashboard(videos) {
     const estadoLabel = v.estado === 'editado' ? 'Editado' : (v.estado === 'publicado' ? 'Publicado' : 'Descargado');
     return `
       <div class="qi" onclick="abrirEnEstudio(${i})" title="Abrir en Estudio: ${tituloEsc}">
-        <div class="qthumb">🎬<div class="play-ico">▶</div></div>
+        <div class="qthumb"><img src="iconos/play.svg" class="icono-svg-sm" /></div>
         <div class="qi-info">
           <div class="qi-t" title="${tituloEsc}">${tituloEsc}</div>
           <div class="qi-m">${v.dur || '0:00'} • ${v.tamano || ''} • ${v.partes || 1} parte(s)</div>
@@ -575,15 +853,44 @@ function filtrarGaleria() {
   renderGaleria(lista);
 }
 
-function eliminarVideo(idx, btn) {
-  App.galeria.splice(idx, 1);
-  buildPlaylist(App.galeria);
-  renderGaleria(App.galeria);
-  renderPipPlaylist();
-  renderColaVideosDashboard(App.galeria);
-  renderEstudioPlaylist(App.galeria);
-  mostrarToast('warning', '🗑 Video eliminado de la biblioteca.');
-  addLog('warn', 'Video eliminado manualmente de la biblioteca.');
+async function eliminarVideo(idx, btn) {
+  const v = App.galeria[idx];
+  if (!v) return;
+
+  const titulo = v.titulo || v.id;
+  const confirmado = await mostrarModalConfirmacion({
+    tag: 'PURGA DE BIBLIOTECA',
+    titulo: '¿Eliminar Video Seleccionado?',
+    subtitulo: 'Se purgará físicamente el archivo del sistema junto a su configuración JSON y clips.',
+    itemTitulo: titulo,
+    itemId: v.id,
+    detalles: [
+      { label: 'Video Original', desc: 'descargas/' + v.id + ' (.mp4)' },
+      { label: 'Metadatos JSON', desc: 'metadata.json (información de publicación)' },
+      { label: 'Clips y Partes', desc: 'procesados/' + v.id + ' (segmentos)' }
+    ],
+    nota: 'La eliminación es inmediata e irreversible. Los archivos no van a la papelera.',
+    textoConfirmar: 'Eliminar Permanentemente',
+    icono: 'eliminar.svg',
+    peligro: true
+  });
+  if (!confirmado) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/videos/${encodeURIComponent(v.id)}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('warning', `Video "${escapeHtml(titulo)}" y su JSON eliminados de disco.`);
+      addLog('warn', `Video y metadata eliminados de disco: <span class="hl">${v.id}</span>.`);
+      await cargarGaleriaDesdeServidor();
+    } else {
+      mostrarToast('error', `Error al eliminar: ${data.error || 'Desconocido'}`);
+    }
+  } catch(e) {
+    mostrarToast('error', 'Error al comunicarse con el servidor.');
+  }
 }
 
 // ────────────────────────────────────────────
@@ -601,7 +908,7 @@ function renderPipPlaylist() {
     return `
     <div class="pip-pl-item ${i === App.pip.idx ? 'active' : ''}" onclick="cargarVideo(${i})" id="ppl-${i}" title="${tituloEsc}">
       <span class="pip-pl-num">${i+1}</span>
-      <span class="pip-pl-ico">🎬</span>
+      <span class="pip-pl-ico"><img src="iconos/play.svg" class="icono-svg-sm" /></span>
       <div class="pip-pl-info">
         <div class="pip-pl-title">${tituloEsc}</div>
         <div class="pip-pl-dur">${v.dur || '0:00'} · ${v.partes || 1} partes</div>
@@ -639,7 +946,7 @@ function cargarVideo(idx) {
         emptyTxt.innerHTML = `
           <strong style="color:var(--cyan);font-size:13px">${escapeHtml(v.titulo)}</strong><br>
           <span style="color:var(--txt3)">${v.dur} · ${v.tamano} · ${v.partes} partes</span><br><br>
-          <span style="color:var(--txt3);font-size:11px">📁 descargas/${v.id}/video_original.mp4</span>`;
+          <span style="color:var(--txt3);font-size:11px">descargas/${v.id}/video_original.mp4</span>`;
       }
     }
     simularReproduccion(v.durSec);
@@ -659,7 +966,7 @@ function cargarVideo(idx) {
   if (elFill) elFill.style.width = '0%';
   if (elThumb) elThumb.style.left = '0%';
   if (elCur) elCur.textContent = '0:00';
-  if (elPlayBtn) elPlayBtn.textContent = '⏸';
+  if (elPlayBtn) elPlayBtn.innerHTML = '<img src="iconos/pausa.svg" class="icono-svg-sm" />';
 }
 
 let simTimer = null;
@@ -722,7 +1029,7 @@ function cerrarPiP() {
   if (fill) fill.style.width = '0%';
   if (thumb) thumb.style.left = '0%';
   if (cur) cur.textContent = '0:00';
-  if (playBtn) playBtn.textContent = '▶';
+  if (playBtn) playBtn.innerHTML = '<img src="iconos/play.svg" class="icono-svg-sm" />';
 
   mostrarToast('info', 'Reproductor flotante cerrado y memoria liberada.');
 }
@@ -797,6 +1104,7 @@ function prepararVideoEnEstudio(idx) {
   }
 
   cargarMetadatosEnEditor(v);
+  renderClipsEstudio(v);
 
   // Marcar item activo en la lista lateral
   document.querySelectorAll('.estudio-pl-item').forEach((el, i) => {
@@ -813,7 +1121,7 @@ function prepararVideoEnEstudio(idx) {
   if (durEl) durEl.textContent = v.dur || '0:00';
   if (fill) fill.style.width = '0%';
   if (thumb) thumb.style.left = '0%';
-  if (playBtn) playBtn.textContent = '▶';
+  if (playBtn) playBtn.innerHTML = '<img src="iconos/play.svg" class="icono-svg-sm" />';
 }
 
 function cargarVideoEnEstudio(idx, autoplay = true) {
@@ -846,7 +1154,6 @@ function cargarVideoEnEstudio(idx, autoplay = true) {
         video.src = fullUrl;
       }
       video.playbackRate = App.estudio.speed || 1.0;
-      video.load();
       video.play().catch(e => {});
     }
     if (poster) poster.style.display = 'none';
@@ -856,6 +1163,7 @@ function cargarVideoEnEstudio(idx, autoplay = true) {
   }
 
   cargarMetadatosEnEditor(v);
+  renderClipsEstudio(v);
 
   // Marcar item activo en la lista lateral
   document.querySelectorAll('.estudio-pl-item').forEach((el, i) => {
@@ -868,7 +1176,7 @@ function cargarVideoEnEstudio(idx, autoplay = true) {
 
   if (curEl) curEl.textContent = '0:00';
   if (durEl) durEl.textContent = v.dur || '0:00';
-  if (playBtn) playBtn.textContent = '⏸';
+  if (playBtn) playBtn.innerHTML = '<img src="iconos/pausa.svg" class="icono-svg-sm" />';
 
   addLog('info', `Reproduciendo en Estudio: <span class="hl">${escapeHtml(v.titulo)}</span>`);
 }
@@ -910,18 +1218,22 @@ function seekEstudio(e) {
   if (elThumb) elThumb.style.left = (pct * 100) + '%';
 }
 
+let _ultimoSegundoEstudio = -1;
 function estudioUpdateProgress() {
   const v = document.getElementById('estudio-video');
   if (!v || !v.duration) return;
   const pct = (v.currentTime / v.duration) * 100;
   const elFill = document.getElementById('estudio-prog-fill');
   const elThumb = document.getElementById('estudio-prog-thumb');
-  const elCur = document.getElementById('estudio-cur');
-  const elDur = document.getElementById('estudio-dur');
   if (elFill) elFill.style.width = pct + '%';
   if (elThumb) elThumb.style.left = pct + '%';
-  if (elCur) elCur.textContent = fmtTime(v.currentTime);
-  if (elDur) elDur.textContent = fmtTime(v.duration);
+
+  const secInt = Math.floor(v.currentTime);
+  if (secInt !== _ultimoSegundoEstudio) {
+    _ultimoSegundoEstudio = secInt;
+    const elCur = document.getElementById('estudio-cur');
+    if (elCur) elCur.textContent = fmtTime(v.currentTime);
+  }
 }
 
 function estudioOnVideoLoaded() {
@@ -960,7 +1272,7 @@ function estudioSetVol(val) {
   const v = document.getElementById('estudio-video');
   if (v) v.volume = val;
   const b = document.getElementById('estudio-mute-btn');
-  if (b) b.textContent = val == 0 ? '🔇' : '🔊';
+  if (b) b.innerHTML = val == 0 ? '<img src="iconos/audio.svg" class="icono-svg-sm" style="opacity:0.35" />' : '<img src="iconos/audio.svg" class="icono-svg-sm" />';
 }
 
 function estudioToggleMute() {
@@ -968,7 +1280,7 @@ function estudioToggleMute() {
   if (v) {
     v.muted = !v.muted;
     const b = document.getElementById('estudio-mute-btn');
-    if (b) b.textContent = v.muted ? '🔇' : '🔊';
+    if (b) b.innerHTML = v.muted ? '<img src="iconos/audio.svg" class="icono-svg-sm" style="opacity:0.35" />' : '<img src="iconos/audio.svg" class="icono-svg-sm" />';
   }
 }
 
@@ -988,7 +1300,7 @@ function toggleModoTeatro() {
   App.estudio.modoTeatro = !App.estudio.modoTeatro;
   page.classList.toggle('estudio-teatro', App.estudio.modoTeatro);
   const btn = document.getElementById('btn-modo-teatro');
-  if (btn) btn.textContent = App.estudio.modoTeatro ? '🔲 Vista Normal' : '🎬 Modo Cine';
+  if (btn) btn.innerHTML = App.estudio.modoTeatro ? '<img src="iconos/pantalla.svg" class="icono-svg-sm" /> Vista Normal' : '<img src="iconos/play.svg" class="icono-svg-sm" /> Modo Cine';
 }
 
 function activarModoFlotanteDesdeEstudio() {
@@ -1031,7 +1343,7 @@ function cargarMetadatosEnEditor(v) {
 
   if (badge) {
     badge.className = 'meta-badge-idle';
-    badge.textContent = '✓ Sincronizado';
+    badge.textContent = 'Sincronizado';
   }
 }
 
@@ -1101,26 +1413,26 @@ async function guardarMetadatosActivo(esAuto = false) {
 
       if (badge) {
         badge.className = 'meta-badge-idle';
-        badge.textContent = '✓ Guardado en JSON';
+        badge.textContent = 'Guardado en JSON';
       }
 
       // Actualizar visualmente títulos en listas sin reiniciar video
       actualizarTitulosEnListas(v.id, nuevoTitulo);
 
       if (!esAuto) {
-        mostrarToast('success', '✅ Metadatos guardados permanentemente en el archivo JSON.');
+        mostrarToast('success', 'Metadatos guardados permanentemente en el archivo JSON.');
       }
     } else {
       if (badge) {
         badge.className = 'meta-badge-saving';
-        badge.textContent = '❌ Error al guardar';
+        badge.textContent = 'Error al guardar';
       }
       if (!esAuto) mostrarToast('error', `Error: ${data.error}`);
     }
   } catch(e) {
     if (badge) {
       badge.className = 'meta-badge-saving';
-      badge.textContent = '⚠ Sin servidor';
+      badge.textContent = 'Sin servidor';
     }
   }
 }
@@ -1145,6 +1457,155 @@ function restaurarMetadatosOriginales() {
   mostrarToast('info', 'Valores restaurados desde la memoria actual.');
 }
 
+// ─────────────────────────────────────────────────────────
+// MÓDULO DE RECORTE & SEGMENTACIÓN DE VIDEO (ESTUDIO)
+// ─────────────────────────────────────────────────────────
+
+function onCambioDuracionRecorte(val) {
+  const wrapCustom = document.getElementById('wrap-duracion-custom');
+  if (wrapCustom) wrapCustom.style.display = (val === 'custom') ? 'block' : 'none';
+}
+
+function renderClipsEstudio(v) {
+  const contenedor = document.getElementById('lista-clips-estudio');
+  const badge = document.getElementById('badge-estado-recorte');
+  const titulo = document.getElementById('titulo-clips-estudio');
+  if (!contenedor) return;
+
+  if (!v) {
+    if (badge) { badge.className = 'tbadge pend'; badge.textContent = 'Sin video'; }
+    if (titulo) titulo.textContent = 'Clips Recortados (0 partes)';
+    contenedor.innerHTML = '<div style="font-size:11px;color:var(--txt3);text-align:center;padding:12px">Selecciona un video de la biblioteca para ver o generar clips.</div>';
+    return;
+  }
+
+  const clips = v.clips || [];
+  if (badge) {
+    if (clips.length > 0) {
+      badge.className = 'tbadge ok';
+      badge.textContent = `${clips.length} partes recortadas`;
+    } else {
+      badge.className = 'tbadge pend';
+      badge.textContent = 'Sin clips';
+    }
+  }
+
+  if (titulo) {
+    titulo.textContent = `Clips Recortados (${clips.length} partes)`;
+  }
+
+  if (clips.length === 0) {
+    contenedor.innerHTML = `
+      <div style="font-size:11px;color:var(--txt3);text-align:center;padding:14px;background:var(--bg2);border-radius:6px">
+        Este video aún no tiene clips recortados en disco.<br>
+        Selecciona la duración arriba (ej: 60s para TikTok/Shorts) y haz clic en <strong>Cortar en Partes</strong>.
+      </div>
+    `;
+    return;
+  }
+
+  contenedor.innerHTML = clips.map((clip, i) => {
+    const nombreEsc = escapeHtml(clip.nombre);
+    return `
+      <div class="flex-between" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;align-items:center;transition:border-color .2s">
+        <div class="flex-align-8" style="cursor:pointer;flex:1;min-width:0" onclick="reproducirClipEnEstudio('${clip.url_stream}', '${nombreEsc}', ${clip.parte})">
+          <span class="cico cico-cyan" style="width:26px;height:26px;min-width:26px;display:flex;align-items:center;justify-content:center"><img src="iconos/play.svg" class="icono-svg-sm" /></span>
+          <div style="min-width:0;flex:1">
+            <div style="font-size:12px;font-weight:600;color:var(--txt1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${nombreEsc}">${nombreEsc}</div>
+            <div style="font-size:10px;color:var(--txt3)">Parte ${clip.parte || (i + 1)} · ${clip.tamano || '—'}</div>
+          </div>
+        </div>
+        <div class="flex-align-8">
+          <button class="btn bs bsm" onclick="reproducirClipEnEstudio('${clip.url_stream}', '${nombreEsc}', ${clip.parte})" title="Ver este clip en el reproductor">
+            <img src="iconos/play.svg" class="icono-svg-sm" /> Ver
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function reproducirClipEnEstudio(urlStream, nombreClip, numParte) {
+  const video = document.getElementById('estudio-video');
+  const poster = document.getElementById('estudio-poster');
+  const badgeEstado = document.getElementById('estudio-badge-estado');
+  if (!video || !urlStream) return;
+
+  if (poster) poster.style.display = 'none';
+  video.src = API_BASE + urlStream;
+  video.playbackRate = App.estudio.speed || 1.0;
+  video.play().catch(() => {});
+
+  if (badgeEstado) {
+    badgeEstado.textContent = `PARTE ${numParte || 1}`;
+    badgeEstado.style.borderColor = 'var(--purple)';
+    badgeEstado.style.color = 'var(--purple)';
+  }
+
+  mostrarToast('info', `Reproduciendo: ${nombreClip}`);
+  addLog('info', `Reproduciendo clip en Estudio: <span class="hl">${escapeHtml(nombreClip)}</span>`);
+}
+
+async function ejecutarRecorteEstudio() {
+  const v = App.estudio.videoActivo || App.playlist[App.estudio.idx];
+  if (!v || !v.id) {
+    mostrarToast('warning', 'Selecciona un video primero en el Estudio.');
+    return;
+  }
+
+  const selDur = document.getElementById('sel-duracion-recorte')?.value || '480';
+  let durSeg = parseInt(selDur);
+  if (selDur === 'custom') {
+    durSeg = parseInt(document.getElementById('input-duracion-custom')?.value) || 60;
+  }
+
+  const vel = parseFloat(document.getElementById('sel-velocidad-recorte')?.value) || 1.0;
+  const btn = document.getElementById('btn-ejecutar-recorte');
+  const origBtnHtml = btn ? btn.innerHTML : '';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<img src="iconos/cortar.svg" class="icono-svg-sm" /> Cortando video...';
+  }
+
+  mostrarToast('info', `Iniciando corte de "${escapeHtml(v.titulo)}" en bloques de ${durSeg}s...`);
+  addLog('info', `Iniciando corte de video <span class="hl">${escapeHtml(v.titulo)}</span> (Bloques: ${durSeg}s, Vel: ${vel}x)...`);
+
+  try {
+    const res = await fetch(API_BASE + '/api/videos/recortar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id_video: v.id,
+        duracion_bloque: durSeg,
+        factor_velocidad: vel,
+        purgar_original: false
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      v.clips = data.clips || [];
+      v.partes = data.total_clips || (data.clips ? data.clips.length : 1);
+      v.estado = 'editado';
+
+      renderClipsEstudio(v);
+      mostrarToast('success', `Corte finalizado: ${v.partes} partes generadas en descargas/${v.id}/clips/`);
+      addLog('ok', `Video segmentado exitosamente: <span class="hl">${v.partes} partes</span> generadas.`);
+      cargarGaleriaDesdeServidor();
+    } else {
+      mostrarToast('error', `Error al recortar: ${data.error || 'Desconocido'}`);
+      addLog('err', `Fallo al recortar video: ${data.error || 'Error'}`);
+    }
+  } catch (err) {
+    mostrarToast('error', `Error al comunicarse con el servidor: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnHtml;
+    }
+  }
+}
+
 let videoPendientePublicar = null;
 let plataformaPendientePublicar = 'telegram';
 
@@ -1153,10 +1614,81 @@ function publicarVideoDesdeGaleria(idx, plat) {
   publicarVideoActivo(plat);
 }
 
+async function confirmarEliminarVideoEstudio() {
+  const v = App.estudio.videoActivo || App.playlist[App.estudio.idx];
+  if (!v || !v.id) {
+    mostrarToast('warning', 'No hay un video activo seleccionado para eliminar.');
+    return;
+  }
+
+  const titulo = v.titulo || v.id;
+  const confirmado = await mostrarModalConfirmacion({
+    tag: 'PURGA PERMANENTE DE DISCO',
+    titulo: '¿Eliminar Video y Metadatos JSON?',
+    subtitulo: 'Esta acción purgará físicamente el archivo original, todos los clips y la configuración JSON.',
+    itemTitulo: titulo,
+    itemId: v.id,
+    detalles: [
+      { label: 'Video Original', desc: 'descargas/' + v.id + ' (.mp4)' },
+      { label: 'Metadatos JSON', desc: 'metadata.json (información de publicación)' },
+      { label: 'Segmentos y Clips', desc: 'procesados/' + v.id + ' (subcarpetas de recortes)' }
+    ],
+    nota: 'El espacio en disco se liberará de inmediato. Esta acción no se puede deshacer.',
+    textoConfirmar: 'Eliminar Permanentemente',
+    icono: 'eliminar.svg',
+    peligro: true
+  });
+  if (!confirmado) return;
+
+  mostrarToast('info', `Eliminando "${escapeHtml(titulo)}" del disco...`);
+  addLog('warn', `Eliminando video y metadata JSON: <span class="hl">${escapeHtml(titulo)}</span> (${v.id})...`);
+
+  // Detener reproductor si estaba reproduciendo este video
+  const video = document.getElementById('estudio-video');
+  if (video) {
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/videos/${encodeURIComponent(v.id)}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('success', `Video "${escapeHtml(titulo)}" y su JSON eliminados permanentemente del disco.`);
+      addLog('ok', `Video y archivo JSON eliminados de disco: <span class="hl">${v.id}</span>.`);
+
+      // Sincronizar galería desde disco
+      await cargarGaleriaDesdeServidor();
+
+      // Si quedan videos, cargar el primero; si no, reiniciar vista del Estudio
+      if (App.galeria.length > 0) {
+        cargarVideoEnEstudio(0, false);
+      } else {
+        App.estudio.videoActivo = null;
+        const poster = document.getElementById('estudio-poster');
+        const posterTitle = document.getElementById('estudio-poster-title');
+        const posterSub = document.getElementById('estudio-poster-sub');
+        if (poster) poster.style.display = 'flex';
+        if (posterTitle) posterTitle.textContent = 'Ningún video en disco';
+        if (posterSub) posterSub.textContent = 'Agrega una fuente o enlace para descargar videos.';
+        renderClipsEstudio(null);
+      }
+    } else {
+      mostrarToast('error', `Error al eliminar: ${data.error || 'Desconocido'}`);
+      addLog('err', `Error al eliminar video ${v.id}: ${data.error}`);
+    }
+  } catch (err) {
+    mostrarToast('error', `Error al comunicarse con el servidor: ${err.message}`);
+  }
+}
+
 async function publicarVideoActivo(plat) {
   const v = App.estudio.videoActivo || App.playlist[App.estudio.idx];
   if (!v) {
-    mostrarToast('warning', '⚠️ Selecciona un video primero en el Estudio.');
+    mostrarToast('warning', 'Selecciona un video primero en el Estudio.');
     return;
   }
   // Asegurar que los metadatos editados en pantalla se guarden en disco antes de publicar
@@ -1177,16 +1709,16 @@ async function publicarVideoActivo(plat) {
   const grpCanal = document.getElementById('m-pub-grupo-canal');
   const btnConfirmar = document.getElementById('m-pub-btn-confirmar');
 
-  const iconos = {
-    telegram: '✈️ Telegram HD',
-    youtube: '▶️ YouTube',
-    tiktok: '🎵 TikTok',
-    facebook: '📘 Facebook',
-    instagram: '📸 Instagram'
+  const nombresPlat = {
+    telegram: 'Telegram HD',
+    youtube: 'YouTube',
+    tiktok: 'TikTok',
+    facebook: 'Facebook',
+    instagram: 'Instagram'
   };
 
-  const nombrePlat = iconos[plat] || (plat ? plat.toUpperCase() : 'TELEGRAM HD');
-  if (elHdr) elHdr.textContent = `Publicar Video en ${nombrePlat}`;
+  const nombrePlat = nombresPlat[plat] || (plat ? plat.toUpperCase() : 'Telegram HD');
+  if (elHdr) elHdr.innerHTML = `<img src="iconos/${plat || 'telegram'}.svg" class="icono-svg" /> Publicar Video en ${nombrePlat}`;
   if (elPlatLbl) elPlatLbl.textContent = nombrePlat;
   if (elVidTitulo) elVidTitulo.textContent = v.titulo || 'Sin título';
   if (elVidId) elVidId.textContent = v.id || '—';
@@ -1203,9 +1735,74 @@ async function publicarVideoActivo(plat) {
     actualizarVistasCanalTelegram();
   }
 
+  // Adaptar dinámicamente opciones de modo (Completo vs Clips) según plataforma
+  const rCompleto = document.getElementById('m-pub-radio-completo');
+  const rClips = document.getElementById('m-pub-radio-clips');
+  const rCompWrap = document.getElementById('m-pub-modo-completo-wrap');
+  const tComp = document.getElementById('m-pub-modo-completo-titulo');
+  const dComp = document.getElementById('m-pub-modo-completo-desc');
+  const tClips = document.getElementById('m-pub-modo-clips-titulo');
+  const dClips = document.getElementById('m-pub-modo-clips-desc');
+  const notaModo = document.getElementById('m-pub-modo-nota');
+
+  if (rCompleto && rClips && rCompWrap) {
+    if (plat === 'tiktok') {
+      rCompleto.disabled = true;
+      rCompWrap.style.opacity = '0.35';
+      rCompWrap.style.pointerEvents = 'none';
+      rClips.checked = true;
+      if (tClips) tClips.innerHTML = '<img src="iconos/tiktok.svg" class="icono-svg-sm" /> Videos Cortos / Clips (TikTok)';
+      if (dClips) dClips.textContent = 'Publica cada parte o segmento recortado individualmente como video corto.';
+      if (notaModo) {
+        notaModo.style.display = 'block';
+        notaModo.innerHTML = '<strong>Formato TikTok:</strong> Solo admite videos cortos / clips verticales. Si el video original no está segmentado aún, se recortará automáticamente.';
+      }
+    } else if (plat === 'facebook') {
+      rCompleto.disabled = false;
+      rCompWrap.style.opacity = '1';
+      rCompWrap.style.pointerEvents = 'auto';
+      rCompleto.checked = true;
+      if (tComp) tComp.innerHTML = '<img src="iconos/facebook.svg" class="icono-svg-sm" /> Video Completo Original (Entero / Película)';
+      if (dComp) dComp.textContent = 'Publica la película o video completo original sin cortes en tu página o perfil de Facebook.';
+      if (tClips) tClips.innerHTML = '<img src="iconos/cortar.svg" class="icono-svg-sm" /> Segmentos / Clips Recortados (Secuencia / Lista)';
+      if (dClips) dClips.textContent = 'Publica la serie de partes numeradas consecutivamente con títulos individuales.';
+      if (notaModo) notaModo.style.display = 'none';
+    } else if (plat === 'youtube') {
+      rCompleto.disabled = false;
+      rCompWrap.style.opacity = '1';
+      rCompWrap.style.pointerEvents = 'auto';
+      rCompleto.checked = true;
+      if (tComp) tComp.innerHTML = '<img src="iconos/youtube.svg" class="icono-svg-sm" /> Video Completo Original (Horizontal Estándar)';
+      if (dComp) dComp.textContent = 'Sube el video completo en alta calidad a tu canal de YouTube Studio.';
+      if (tClips) tClips.innerHTML = '<img src="iconos/cortar.svg" class="icono-svg-sm" /> Clips Recortados (YouTube Shorts / Secuencia)';
+      if (dClips) dClips.textContent = 'Sube los fragmentos divididos como serie de partes o shorts.';
+      if (notaModo) notaModo.style.display = 'none';
+    } else if (plat === 'telegram') {
+      rCompleto.disabled = false;
+      rCompWrap.style.opacity = '1';
+      rCompWrap.style.pointerEvents = 'auto';
+      rCompleto.checked = true;
+      if (tComp) tComp.innerHTML = '<img src="iconos/telegram.svg" class="icono-svg-sm" /> Video Completo Original (Full HD / Archivo)';
+      if (dComp) dComp.textContent = 'Envía el archivo de video completo en máxima calidad directamente al canal.';
+      if (tClips) tClips.innerHTML = '<img src="iconos/cortar.svg" class="icono-svg-sm" /> Segmentos / Clips Recortados (Secuencia)';
+      if (dClips) dClips.textContent = 'Envía cada parte dividida con sus marcas de tiempo y sinopsis.';
+      if (notaModo) notaModo.style.display = 'none';
+    } else {
+      rCompleto.disabled = false;
+      rCompWrap.style.opacity = '1';
+      rCompWrap.style.pointerEvents = 'auto';
+      rCompleto.checked = true;
+      if (tComp) tComp.innerHTML = '<img src="iconos/play.svg" class="icono-svg-sm" /> Video Completo Original';
+      if (dComp) dComp.textContent = 'Sube el video original completo.';
+      if (tClips) tClips.innerHTML = '<img src="iconos/cortar.svg" class="icono-svg-sm" /> Clips Recortados (Secuencia)';
+      if (dClips) dClips.textContent = 'Sube los fragmentos divididos.';
+      if (notaModo) notaModo.style.display = 'none';
+    }
+  }
+
   if (btnConfirmar) {
     btnConfirmar.className = (plat === 'telegram') ? 'btn bp btn-telegram' : 'btn bp';
-    btnConfirmar.textContent = `🚀 Publicar en ${nombrePlat}`;
+    btnConfirmar.innerHTML = `<img src="iconos/${plat || 'telegram'}.svg" class="icono-svg-sm" /> Publicar en ${nombrePlat}`;
   }
 
   abrirModal('m-publicar-activo');
@@ -1213,7 +1810,7 @@ async function publicarVideoActivo(plat) {
 
 async function confirmarPublicacionDirecta() {
   if (!videoPendientePublicar) {
-    mostrarToast('warning', '⚠️ No hay un video activo seleccionado.');
+    mostrarToast('warning', 'No hay un video activo seleccionado.');
     cerrarModal('m-publicar-activo');
     return;
   }
@@ -1223,13 +1820,16 @@ async function confirmarPublicacionDirecta() {
   const elModo = document.querySelector('input[name="m-pub-modo"]:checked');
   const modo = elModo ? elModo.value : 'completo';
   const canal = document.getElementById('m-pub-canal')?.value?.trim() || '';
+  const modoBrowser = document.getElementById('m-pub-modo-browser')?.value || 'visible';
+  const isHeadless = (modoBrowser === 'headless' || modoBrowser === 'invisible');
 
   if (canal && plat === 'telegram') {
     agregarYGuardarCanalTelegram(canal).catch(() => {});
   }
 
   cerrarModal('m-publicar-activo');
-  mostrarToast('info', `🚀 Iniciando publicación de "${escapeHtml(v.titulo)}" en ${plat.toUpperCase()} (${modo.toUpperCase()})...`);
+  const etiquetaModo = isHeadless ? 'Invisible' : 'Visible';
+  mostrarToast('info', `Iniciando publicación de "${escapeHtml(v.titulo)}" en ${plat.toUpperCase()} (${modo.toUpperCase()}, ${etiquetaModo})...`);
 
   try {
     const res = await fetch(API_BASE + '/api/publicar/individual', {
@@ -1239,12 +1839,14 @@ async function confirmarPublicacionDirecta() {
         id_video: v.id,
         plataforma: plat,
         modo: modo,
-        canal: canal
+        canal: canal,
+        modo_browser: modoBrowser,
+        headless: isHeadless
       })
     });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('success', `✓ Publicación en ${plat.toUpperCase()} iniciada exitosamente.`);
+      mostrarToast('success', `Publicación en ${plat.toUpperCase()} iniciada exitosamente (${etiquetaModo}).`);
       App.fases[3] = 'running';
       setFaseUI(3, 'running', `Publicando (${plat.toUpperCase()})...`);
       document.getElementById('fc3')?.classList.add('active-c');
@@ -1280,7 +1882,7 @@ function renderEstudioPlaylist(videos) {
     const b = estadoBadge[v.estado] || estadoBadge.descargado;
     return `
       <div class="estudio-pl-item ${isActive ? 'active' : ''}" data-id="${v.id}" onclick="cargarVideoEnEstudio(${actualIdx}, true)" title="${tituloEsc}">
-        <span class="estudio-pl-num">#${actualIdx+1}</span>
+        <span class="estudio-pl-num">${isActive ? '<img src="iconos/play.svg" class="icono-svg-sm" />' : '#' + (actualIdx+1)}</span>
         <div class="estudio-pl-info">
           <div class="estudio-pl-title">${tituloEsc}</div>
           <div class="estudio-pl-meta">
@@ -1288,7 +1890,7 @@ function renderEstudioPlaylist(videos) {
             <span>•</span>
             <span>${v.tamano || ''}</span>
             <span>•</span>
-            <span style="color:${b.color}">${b.label}</span>
+            <span style="color:${b.color};display:inline-flex;align-items:center;gap:3px"><img src="iconos/${b.ico || 'videos.svg'}" class="icono-svg-sm" style="width:10px;height:10px" /> ${b.label}</span>
           </div>
         </div>
       </div>
@@ -1317,11 +1919,11 @@ function togglePlay() {
     v.paused ? v.play() : v.pause();
   } else {
     const btn = document.getElementById('pip-play-btn');
-    if (simTimer) { clearInterval(simTimer); simTimer = null; if(btn) btn.textContent = '▶'; }
+    if (simTimer) { clearInterval(simTimer); simTimer = null; if(btn) btn.innerHTML = '<img src="iconos/play.svg" class="icono-svg-sm" />'; }
     else {
       const vid = App.playlist[App.pip.idx];
       if (vid) simularReproduccion(vid.durSec);
-      if(btn) btn.textContent = '⏸';
+      if(btn) btn.innerHTML = '<img src="iconos/pausa.svg" class="icono-svg-sm" />';
     }
   }
 }
@@ -1330,8 +1932,8 @@ function pip10Back()  { const v = document.getElementById('pip-video'); if (v &&
 function pip10Fwd()   { const v = document.getElementById('pip-video'); if (v && v.src) v.currentTime += 10; }
 function pipPrev()    { cargarVideo(Math.max(0, App.pip.idx - 1)); }
 function pipNext()    { cargarVideo(Math.min(App.playlist.length - 1, App.pip.idx + 1)); }
-function setVol(val)  { const v = document.getElementById('pip-video'); if(v) v.volume = val; const b = document.getElementById('pip-mute-btn'); if(b) b.textContent = val==0 ? '🔇' : '🔊'; }
-function toggleMute() { const v = document.getElementById('pip-video'); if(v) { v.muted = !v.muted; const b = document.getElementById('pip-mute-btn'); if(b) b.textContent = v.muted ? '🔇' : '🔊'; } }
+function setVol(val)  { const v = document.getElementById('pip-video'); if(v) v.volume = val; const b = document.getElementById('pip-mute-btn'); if(b) b.innerHTML = val==0 ? '<img src="iconos/audio.svg" class="icono-svg-sm" style="opacity:0.35" />' : '<img src="iconos/audio.svg" class="icono-svg-sm" />'; }
+function toggleMute() { const v = document.getElementById('pip-video'); if(v) { v.muted = !v.muted; const b = document.getElementById('pip-mute-btn'); if(b) b.innerHTML = v.muted ? '<img src="iconos/audio.svg" class="icono-svg-sm" style="opacity:0.35" />' : '<img src="iconos/audio.svg" class="icono-svg-sm" />'; } }
 
 function cycleSpeed() {
   App.pip.speedIdx = (App.pip.speedIdx + 1) % App.pip.speeds.length;
@@ -1355,18 +1957,22 @@ function seekVideo(e) {
   if (elThumb) elThumb.style.left = (pct*100)+'%';
 }
 
+let _ultimoSegundoPip = -1;
 function updateProgress() {
   const v = document.getElementById('pip-video');
   if (!v || !v.duration) return;
   const pct = (v.currentTime / v.duration) * 100;
   const elFill = document.getElementById('pip-prog-fill');
   const elThumb = document.getElementById('pip-prog-thumb');
-  const elCur = document.getElementById('pip-cur');
-  const elDur = document.getElementById('pip-dur');
-  if (elFill) elFill.style.width = pct+'%';
-  if (elThumb) elThumb.style.left = pct+'%';
-  if (elCur) elCur.textContent = fmtTime(v.currentTime);
-  if (elDur) elDur.textContent = fmtTime(v.duration);
+  if (elFill) elFill.style.width = pct + '%';
+  if (elThumb) elThumb.style.left = pct + '%';
+
+  const secInt = Math.floor(v.currentTime);
+  if (secInt !== _ultimoSegundoPip) {
+    _ultimoSegundoPip = secInt;
+    const elCur = document.getElementById('pip-cur');
+    if (elCur) elCur.textContent = fmtTime(v.currentTime);
+  }
 }
 
 function onVideoLoaded() {
@@ -1460,7 +2066,7 @@ document.addEventListener('DOMContentLoaded', () => {
   conectarServidorLogs();
   if (window.location.protocol === 'file:') {
     setTimeout(() => {
-      mostrarToast('warning', '⚠️ ATENCIÓN: Abriste el archivo HTML localmente. Abre http://127.0.0.1:5757 en tu navegador para una mejor experiencia.');
+      mostrarToast('warning', 'ATENCIÓN: Abriste el archivo HTML localmente. Abre http://127.0.0.1:5757 en tu navegador para una mejor experiencia.');
     }, 1500);
   }
 });
@@ -1501,14 +2107,14 @@ function renderTablaFuentes(fuentes) {
     return;
   }
   const badgeTipo = {
-    watch_global:  '<span class="tbadge actv" style="color:var(--cyan);border-color:rgba(0,212,255,.3)">📺 Watch Global</span>',
-    grupo_videos:  '<span class="tbadge actv" style="color:var(--purple);border-color:rgba(168,85,247,.3)">👥 Grupo</span>',
-    pagina_videos: '<span class="tbadge actv" style="color:var(--green);border-color:rgba(34,211,160,.3)">📄 Página</span>',
-    perfil_videos: '<span class="tbadge actv" style="color:var(--amber);border-color:rgba(245,158,11,.3)">👤 Perfil</span>',
-    reel:          '<span class="tbadge actv" style="color:var(--pink);border-color:rgba(244,114,182,.3)">📱 Reel</span>',
-    video_directo: '<span class="tbadge actv">🎬 Video Directo</span>',
-    busqueda:      '<span class="tbadge actv">🔍 Búsqueda</span>',
-    desconocida:   '<span class="tbadge pend">❓ URL Genérica</span>',
+    watch_global:  '<span class="tbadge actv" style="color:var(--cyan);border-color:rgba(0,212,255,.3)"><img src="iconos/facebook.svg" class="icono-svg-sm" /> Watch Global</span>',
+    grupo_videos:  '<span class="tbadge actv" style="color:var(--purple);border-color:rgba(168,85,247,.3)"><img src="iconos/fuentes.svg" class="icono-svg-sm" /> Grupo</span>',
+    pagina_videos: '<span class="tbadge actv" style="color:var(--green);border-color:rgba(34,211,160,.3)"><img src="iconos/fuentes.svg" class="icono-svg-sm" /> Página</span>',
+    perfil_videos: '<span class="tbadge actv" style="color:var(--amber);border-color:rgba(245,158,11,.3)"><img src="iconos/sesion.svg" class="icono-svg-sm" /> Perfil</span>',
+    reel:          '<span class="tbadge actv" style="color:var(--pink);border-color:rgba(244,114,182,.3)"><img src="iconos/play.svg" class="icono-svg-sm" /> Reel</span>',
+    video_directo: '<span class="tbadge actv"><img src="iconos/play.svg" class="icono-svg-sm" /> Video Directo</span>',
+    busqueda:      '<span class="tbadge actv"><img src="iconos/buscar.svg" class="icono-svg-sm" /> Búsqueda</span>',
+    desconocida:   '<span class="tbadge pend"><img src="iconos/alerta.svg" class="icono-svg-sm" /> URL Genérica</span>',
   };
 
   tbody.innerHTML = fuentes.map(f => `
@@ -1522,10 +2128,10 @@ function renderTablaFuentes(fuentes) {
             <input type="checkbox" ${f.activa ? 'checked' : ''} onchange="toggleFuenteURL('${encodeURIComponent(f.url_original)}', this.checked)">
             <div class="tog-track"></div>
           </label>
-          <span class="tbadge ${f.activa ? 'done' : 'pend'}">${f.activa ? '✓ Activa' : '⏸ Pausada'}</span>
+          <span class="tbadge ${f.activa ? 'done' : 'pend'}">${f.activa ? 'Activa' : 'Pausada'}</span>
         </div>
       </td>
-      <td><button class="btn bd bsm" onclick="eliminarFuenteURL('${encodeURIComponent(f.url_original)}')">🗑</button></td>
+      <td><button class="btn bd bsm" onclick="eliminarFuenteURL('${encodeURIComponent(f.url_original)}')"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button></td>
     </tr>
   `).join('');
 }
@@ -1565,10 +2171,10 @@ async function cargarEstadoCookies() {
         if (stEl) {
           if (info.estado === 'ACTIVO') {
             stEl.className = 'pl-st ok';
-            stEl.textContent = `✓ ${info.mensaje}`;
+            stEl.textContent = info.mensaje;
           } else {
             stEl.className = 'pl-st warn';
-            stEl.textContent = `⚠ ${info.mensaje}`;
+            stEl.textContent = info.mensaje;
           }
         }
       }
@@ -1580,7 +2186,7 @@ async function agregarFuenteURL() {
   const input = document.getElementById('nueva-fuente-url');
   if (!input) return;
   const url = input.value.trim();
-  if (!url) { mostrarToast('warning','⚠️ Por favor escribe una URL de Facebook.'); return; }
+  if (!url) { mostrarToast('warning','Por favor escribe una URL de Facebook.'); return; }
   try {
     const res = await fetch(API_BASE + '/fuentes', {
       method: 'POST',
@@ -1589,14 +2195,14 @@ async function agregarFuenteURL() {
     });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('success', `✅ Fuente agregada: ${data.fuente.descripcion}`);
+      mostrarToast('success', `Fuente agregada: ${data.fuente.descripcion}`);
       input.value = '';
       cargarFuentesDesdeServidor();
     } else {
-      mostrarToast('error', `❌ Error: ${data.error}`);
+      mostrarToast('error', `Error: ${data.error}`);
     }
   } catch(e) {
-    mostrarToast('info', `📌 Fuente simulada (inicia 'python interfaz/servidor_logs.py' para guardar en disco)`);
+    mostrarToast('info', `Fuente simulada (inicia 'python interfaz/servidor_logs.py' para guardar en disco)`);
   }
 }
 
@@ -1605,7 +2211,7 @@ async function eliminarFuenteURL(urlEnc) {
     const res = await fetch(API_BASE + '/fuentes/' + urlEnc, { method: 'DELETE' });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('warning', '🗑 Fuente eliminada.');
+      mostrarToast('warning', 'Fuente eliminada.');
       cargarFuentesDesdeServidor();
     }
   } catch(e) {}
@@ -1634,8 +2240,8 @@ function renderTablaPendientes(pendientes) {
     <tr>
       <td>${i + 1}</td>
       <td class="tn" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${url}">${url}</td>
-      <td><span class="tbadge pend">⏳ Pendiente yt-dlp</span></td>
-      <td><button class="btn bd bsm" onclick="eliminarPendienteURL('${encodeURIComponent(url)}')">🗑</button></td>
+      <td><span class="tbadge pend"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Pendiente yt-dlp</span></td>
+      <td><button class="btn bd bsm" onclick="eliminarPendienteURL('${encodeURIComponent(url)}')"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button></td>
     </tr>
   `).join('');
 }
@@ -1644,7 +2250,7 @@ async function agregarEnlacePendiente() {
   const input = document.getElementById('nuevo-pendiente-url');
   if (!input) return;
   const url = input.value.trim();
-  if (!url) { mostrarToast('warning','⚠️ Por favor escribe un enlace de video.'); return; }
+  if (!url) { mostrarToast('warning','Por favor escribe un enlace de video.'); return; }
   try {
     const res = await fetch(API_BASE + '/pendientes', {
       method: 'POST',
@@ -1653,7 +2259,7 @@ async function agregarEnlacePendiente() {
     });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('success', `✅ Enlace agregado a cola de descargas.`);
+      mostrarToast('success', `Enlace agregado a cola de descargas.`);
       input.value = '';
       cargarPendientesDesdeServidor();
     } else {
@@ -1669,21 +2275,21 @@ async function eliminarPendienteURL(urlEnc) {
     const res = await fetch(API_BASE + '/pendientes/' + urlEnc, { method: 'DELETE' });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('warning', '🗑 Enlace eliminado de la cola.');
+      mostrarToast('warning', 'Enlace eliminado de la cola.');
       cargarPendientesDesdeServidor();
     }
   } catch(e) {}
 }
 
 async function ejecutarDescargaUnicamente() {
-  if (App.fases[1] === 'running') { mostrarToast('warning', '⚠️ Descarga o Fase 1 ya está en ejecución.'); return; }
+  if (App.fases[1] === 'running') { mostrarToast('warning', 'Descarga o Fase 1 ya está en ejecución.'); return; }
   try {
     const res = await fetch(API_BASE + '/ejecutar/descargar', { method: 'POST' });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('success', '⬇️ Descarga de pendientes lanzada en servidor Python (omitiendo scraping)...');
+      mostrarToast('success', 'Descarga de pendientes lanzada en servidor Python (omitiendo scraping)...');
       App.fases[1] = 'running';
-      setFaseUI(1, 'running', '⚙ Descargando (yt-dlp)...');
+      setFaseUI(1, 'running', 'Descargando (yt-dlp)...');
       document.getElementById('fc1')?.classList.add('active-c');
       setSysUI('running', 'Descarga de pendientes en ejecución');
       return;
@@ -1696,15 +2302,15 @@ async function ejecutarDescargaUnicamente() {
 // EJECUCIÓN DE FASES
 // ────────────────────────────────────────────
 async function ejecutarFase(n) {
-  if (App.fases[n] === 'running') { mostrarToast('warning', `⚠️ Fase ${n} ya está en ejecución.`); return; }
+  if (App.fases[n] === 'running') { mostrarToast('warning', `Fase ${n} ya está en ejecución.`); return; }
 
   try {
     const res = await fetch(API_BASE + `/ejecutar/${n}`, { method: 'POST' });
     const data = await res.json();
     if (data.ok) {
-      mostrarToast('success', `🚀 Fase ${n} lanzada en el servidor Python.`);
+      mostrarToast('success', `Fase ${n} lanzada en el servidor Python.`);
       App.fases[n] = 'running';
-      setFaseUI(n, 'running', '⚙ Ejecutando (Python)...');
+      setFaseUI(n, 'running', 'Ejecutando (Python)...');
       document.getElementById(`fc${n}`)?.classList.add('active-c');
       setSysUI('running', `Fase ${n} en ejecución`);
       return;
@@ -1712,7 +2318,7 @@ async function ejecutarFase(n) {
   } catch(e) {}
 
   App.fases[n] = 'running';
-  setFaseUI(n, 'running', '⚙ Ejecutando (Simulado)...');
+  setFaseUI(n, 'running', 'Ejecutando (Simulado)...');
   document.getElementById(`fc${n}`)?.classList.add('active-c');
   setSysUI('running', `Fase ${n} ejecutándose`);
   addLog('info', `Fase <span class="hl">${n}</span> iniciada.`);
@@ -1730,12 +2336,12 @@ async function ejecutarFase(n) {
 
 function faseFin(n) {
   App.fases[n] = 'done';
-  setFaseUI(n, 'done', '✓ Completada');
+  setFaseUI(n, 'done', 'Completada');
   document.getElementById(`fc${n}`)?.classList.remove('active-c');
   const btn = document.getElementById(`btn${n}`);
-  if (btn) btn.textContent = '▶ Reiniciar';
+  if (btn) btn.innerHTML = '<img src="iconos/play.svg" class="icono-svg-sm" /> Reiniciar';
   setSysUI('idle', 'Sistema inactivo');
-  mostrarToast('success', `✅ Fase ${n} completada.`);
+  mostrarToast('success', `Fase ${n} completada.`);
   addLog('ok', `Fase <span class="hl">${n}</span> finalizada exitosamente.`);
 }
 
@@ -1747,16 +2353,16 @@ async function detenerFase(n) {
   setFaseUI(n, 'idle', 'Detenida');
   document.getElementById(`fc${n}`)?.classList.remove('active-c');
   const btn = document.getElementById(`btn${n}`);
-  if (btn) btn.textContent = '▶ Iniciar';
+  if (btn) btn.innerHTML = '<img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar';
   setSysUI('idle', 'Sistema inactivo');
-  mostrarToast('warning', `⛔ Fase ${n} detenida.`);
+  mostrarToast('warning', `Fase ${n} detenida.`);
   addLog('warn', `Fase <span class="hl">${n}</span> detenida manualmente.`);
 }
 
-function detenerTodo() { [1,2,3].forEach(detenerFase); mostrarToast('warning','⛔ Todos los procesos detenidos.'); }
+function detenerTodo() { [1,2,3].forEach(detenerFase); mostrarToast('warning','Todos los procesos detenidos.'); }
 
 function ejecutarPipelineCompleto() {
-  mostrarToast('success','🚀 Pipeline completo iniciado: Fase 1 → 2 → 3');
+  mostrarToast('success','Pipeline completo iniciado: Fase 1 → 2 → 3');
   addLog('info','Pipeline completo iniciado.');
   ejecutarFase(1);
   setTimeout(() => ejecutarFase(2), 4000);
@@ -1789,17 +2395,17 @@ function addTarea() {
   const elH = document.getElementById('sc-hora');
   if (!elT || !elF || !elH) return;
   const t = elT.value, f = elF.value, h = elH.value;
-  if (!f||!h) { mostrarToast('warning','⚠️ Completa fecha y hora.'); return; }
+  if (!f||!h) { mostrarToast('warning','Completa fecha y hora.'); return; }
   const tbody = document.getElementById('tb-tareas');
   if (!tbody) return;
   const tr = document.createElement('tr');
-  tr.innerHTML = `<td class="tn">${t.split('(')[0].trim()}</td><td class="tt">${f} ${h}</td><td><span class="tbadge pend">⏳ Pendiente</span></td><td><button class="btn bs bsm" onclick="delTarea(this)">🗑</button></td>`;
+  tr.innerHTML = `<td class="tn">${t.split('(')[0].trim()}</td><td class="tt">${f} ${h}</td><td><span class="tbadge pend">Pendiente</span></td><td><button class="btn bs bsm" onclick="delTarea(this)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button></td>`;
   tbody.appendChild(tr);
-  mostrarToast('success','✅ Tarea programada agregada.');
+  mostrarToast('success','Tarea programada agregada.');
   addLog('ok',`Tarea programada: <span class="hl">${t.split('(')[0].trim()}</span> para ${f} ${h}`);
 }
-function delTarea(btn) { btn.closest('tr')?.remove(); mostrarToast('warning','🗑 Tarea eliminada.'); }
-function guardarProg() { cerrarModal('m-programar'); mostrarToast('success','✅ Tarea programada guardada.'); addLog('ok','Tarea programada configurada desde el modal.'); }
+function delTarea(btn) { btn.closest('tr')?.remove(); mostrarToast('warning','Tarea eliminada.'); }
+function guardarProg() { cerrarModal('m-programar'); mostrarToast('success','Tarea programada guardada.'); addLog('ok','Tarea programada configurada desde el modal.'); }
 
 // ────────────────────────────────────────────
 // PLATAFORMAS
@@ -1875,7 +2481,7 @@ async function guardarConfig() {
     const data = await res.json();
     if (data.ok) {
       cerrarModal('m-config');
-      mostrarToast('success', `💾 Configuración guardada (Navegador: ${headless ? 'Headless' : 'Visible'}).`);
+      mostrarToast('success', `Configuración guardada (Navegador: ${headless ? 'Headless' : 'Visible'}).`);
       addLog('ok', `Configuración actualizada en disco: Headless=${headless}, MaxScrolls=${maxScrolls}, Vel=${vel}x`);
     } else {
       mostrarToast('error', `Error al guardar: ${data.error}`);
@@ -1891,7 +2497,7 @@ function aplicarVel() {
   const checked = document.querySelector('input[name="vel"]:checked');
   const v = checked ? checked.value : '1.0';
   cerrarModal('m-vel');
-  mostrarToast('success', `⚡ Velocidad: ${v}x`);
+  mostrarToast('success', `Velocidad: ${v}x`);
   addLog('info', `Factor de velocidad actualizado a <span class="hl">${v}x</span>.`);
 }
 
@@ -1907,12 +2513,13 @@ function addLog(tipo, msg) {
   const lbl = {info:'INFO',ok:'OK',warn:'AVISO',err:'ERROR'};
   const div = document.createElement('div');
   div.className = 'le';
-  div.innerHTML = `<span class="lt">${t}</span><span class="ltag ${tipo}">${lbl[tipo]||'INFO'}</span><span class="lm">${msg}</span>`;
+  div.innerHTML = `<span class="lt">${horaActualOSegura(t)}</span><span class="ltag ${tipo}">${lbl[tipo]||'INFO'}</span><span class="lm">${msg}</span>`;
   bd.appendChild(div);
   bd.scrollTop = bd.scrollHeight;
 }
+function horaActualOSegura(t) { return t; }
 function limpiarLog() { const bd = document.getElementById('log-bd'); if(bd) bd.innerHTML=''; addLog('info','Log limpiado.'); }
-function verLogFase(n) { addLog('info',`Consultando log detallado de la Fase <span class="hl">${n}</span>...`); mostrarToast('success',`📄 Log Fase ${n} consultado.`); }
+function verLogFase(n) { addLog('info',`Consultando log detallado de la Fase <span class="hl">${n}</span>...`); mostrarToast('success',`Log Fase ${n} consultado.`); }
 
 // ────────────────────────────────────────────
 // TOASTS
@@ -1920,10 +2527,15 @@ function verLogFase(n) { addLog('info',`Consultando log detallado de la Fase <sp
 function mostrarToast(tipo, msg) {
   const tc = document.getElementById('tc');
   if (!tc) return;
-  const ic = {success:'✅',warning:'⚠️',error:'❌'};
+  const ic = {
+    success: '<img src="iconos/check.svg" class="icono-svg-sm" />',
+    warning: '<img src="iconos/alerta.svg" class="icono-svg-sm" />',
+    error: '<img src="iconos/error.svg" class="icono-svg-sm" />',
+    info: '<img src="iconos/pipeline.svg" class="icono-svg-sm" />'
+  };
   const el = document.createElement('div');
   el.className = `toast ${tipo}`;
-  el.innerHTML = `<span>${ic[tipo]||'💡'}</span><span>${msg}</span>`;
+  el.innerHTML = `<span>${ic[tipo]||'<img src="iconos/pipeline.svg" class="icono-svg-sm" />'}</span><span>${msg}</span>`;
   tc.appendChild(el);
   setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(20px)'; el.style.transition='all .3s'; setTimeout(()=>el.remove(),300); }, 3500);
 }
@@ -1942,11 +2554,11 @@ async function refrescar() {
       if(sDet) sDet.textContent = data.estadisticas.historial;
       if(f1p) f1p.textContent = data.estadisticas.pendientes;
       if(sDesc) sDesc.textContent = data.estadisticas.completados;
-      mostrarToast('success','🔄 Estado sincronizado con el servidor Python.');
+      mostrarToast('success','Estado sincronizado con el servidor Python.');
       return;
     }
   } catch(e) {}
-  mostrarToast('success','🔄 Estado actualizado.');
+  mostrarToast('success','Estado actualizado.');
   addLog('info','Actualización manual solicitada.');
 }
 
@@ -1959,7 +2571,7 @@ async function refrescarEstadoAutomatico() {
       for (const [f, st] of Object.entries(data.fases)) {
         if (App.fases[f] !== st) {
           App.fases[f] = st;
-          const txtMap = { idle: 'Inactiva', running: '⚙ Ejecutando...', done: '✓ Completada', error: '❌ Error' };
+          const txtMap = { idle: 'Inactiva', running: 'Ejecutando...', done: 'Completada', error: 'Error' };
           setFaseUI(f, st, txtMap[st] || st);
           const card = document.getElementById('fc' + f);
           if (card) {

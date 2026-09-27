@@ -115,7 +115,7 @@ class NietoAuditorYLimpiadorROM:
         completo = plataformas_requeridas_set.issubset(plataformas_ok)
 
         if completo:
-            print(f"[AUDITOR] [✓] Clip {clip_id} completado en todas las redes: {plataformas_ok}")
+            print(f"[AUDITOR] [OK] Clip {clip_id} completado en todas las redes: {plataformas_ok}")
         else:
             faltantes = plataformas_requeridas_set - plataformas_ok
             print(f"[AUDITOR] Clip {clip_id} pendiente en: {faltantes}")
@@ -178,7 +178,7 @@ class NietoAuditorYLimpiadorROM:
 
         try:
             ruta_clip.unlink()
-            print(f"[AUDITOR] [🗑] Clip eliminado de ROM: {ruta_clip.name}")
+            print(f"[AUDITOR] [PURGA] Clip eliminado de ROM: {ruta_clip.name}")
             return True
         except OSError as error:
             print(f"[AUDITOR] [ERROR] No se pudo eliminar {ruta_clip}: {error}")
@@ -204,7 +204,7 @@ class NietoAuditorYLimpiadorROM:
             return False
         try:
             shutil.rmtree(dir_video)
-            print(f"[AUDITOR] [🗑] Carpeta eliminada en cascada: {dir_video}")
+            print(f"[AUDITOR] [PURGA] Carpeta eliminada en cascada: {dir_video}")
             return True
         except OSError as error:
             print(f"[AUDITOR] [ERROR] No se pudo eliminar carpeta {dir_video}: {error}")

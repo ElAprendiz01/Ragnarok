@@ -112,17 +112,25 @@ class HijoProcesadorDeVelocidad:
         """
         Construye los flags para el modo de copia directa de stream.
         No hay recodificación: el video se corta en ~1 segundo sin pérdida de calidad.
+        Incluye -movflags +faststart para inicio instantáneo de reproducción en navegadores.
 
         Returns:
-            Lista de flags: ['-c:v', 'copy', '-c:a', 'copy']
+            Lista de flags optimizados para stream copy directo y timestamps limpios.
         """
-        flags = ["-c:v", "copy", "-c:a", "copy"]
+        flags = [
+            "-c:v", "copy",
+            "-c:a", "copy",
+            "-avoid_negative_ts", "make_zero",
+            "-fflags", "+genpts",
+            "-movflags", "+faststart",
+        ]
         print(f"[HIJO] Modo stream copy (1.0x). Flags: {' '.join(flags)}")
         return flags
 
     def _construir_flags_recodificacion(self, encoder: str) -> List[str]:
         """
         Construye los flags para recodificación con filtros de velocidad.
+        Incluye -tune fastdecode para decodificación ultra fluida en CPUs de baja gama.
 
         Args:
             encoder: Nombre del encoder de video a usar (h264_nvenc, h264_qsv, libx264).
@@ -135,6 +143,8 @@ class HijoProcesadorDeVelocidad:
             filtros
             + ["-c:v", encoder]
             + ["-preset", self.PRESET_RECODIFICACION]
+            + ["-tune", "fastdecode"]
+            + ["-movflags", "+faststart"]
             + ["-threads", str(self._threads)]
         )
         print(f"[HIJO] Modo recodificación ({self._factor}x). Encoder: {encoder}. Flags: {' '.join(flags)}")

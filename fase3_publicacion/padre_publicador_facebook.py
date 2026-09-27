@@ -42,11 +42,11 @@ class PadrePublicadorFacebook:
             if exito:
                 valido = await self.validar_estado_procesamiento_plataforma(pagina)
                 if valido:
-                    print(f"[FB] [✓] Video publicado y verificado en Facebook: {ruta_clip.name}")
+                    print(f"[FB] [OK] Video publicado y verificado en Facebook: {ruta_clip.name}")
                 else:
-                    print(f"[FB] [✓] Video publicado en Facebook: {ruta_clip.name}")
+                    print(f"[FB] [OK] Video publicado en Facebook: {ruta_clip.name}")
             else:
-                print(f"[FB] [✗] Fallo al publicar en Facebook: {ruta_clip.name}")
+                print(f"[FB] [ERROR] Fallo al publicar en Facebook: {ruta_clip.name}")
 
             return exito
 

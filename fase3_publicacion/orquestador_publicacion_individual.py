@@ -50,14 +50,23 @@ class OrquestadorPublicacionIndividual:
     hacia la plataforma seleccionada (con soporte preferente y maduro para Telegram Web HD).
     """
 
-    def __init__(self, ruta_config: str = "config/parametros_globales.json") -> None:
+    def __init__(
+        self,
+        ruta_config: str = "config/parametros_globales.json",
+        headless: Optional[bool] = None,
+    ) -> None:
         self._ruta_base = RAIZ
         self._config = self._cargar_config(ruta_config)
         self._config_pub = self._config.get("publicacion", {})
         self._config_rutas = self._config.get("rutas", {})
         self._config_persist = self._config.get("persistencia", {})
 
-        self._headless = self._config.get("extraccion", {}).get("headless", False)
+        if headless is not None:
+            self._headless = bool(headless)
+        else:
+            self._headless = self._config.get("publicacion", {}).get(
+                "headless", self._config.get("extraccion", {}).get("headless", False)
+            )
         self._dir_descargas = self._ruta_base / self._config_rutas.get("directorio_descargas", "descargas")
         self._dir_procesados = self._ruta_base / self._config_rutas.get("directorio_procesados", "procesados")
         self._ruta_estado = self._ruta_base / self._config_persist.get("estado_publicaciones", "datos_persistencia/estado_publicaciones.txt")
@@ -164,6 +173,7 @@ class OrquestadorPublicacionIndividual:
                         descripcion=descripcion,
                         canal_target=canal_target,
                         numero_parte=num_parte,
+                        callback_log=self._log,
                     )
                 else:
                     exito = await publicador.iniciar_flujo_subida(
@@ -177,11 +187,11 @@ class OrquestadorPublicacionIndividual:
                 clip_id = f"{id_video}_{ruta_archivo.stem}"
                 if exito:
                     self._auditor.marcar_plataforma_completada(clip_id, plataforma)
-                    self._log("OK", f"✓ {ruta_archivo.name} publicado exitosamente en {plataforma.upper()}.")
+                    self._log("OK", f"{ruta_archivo.name} publicado exitosamente en {plataforma.upper()}.")
                 else:
                     exito_global = False
                     self._auditor.registrar_error_publicacion(clip_id, plataforma, "Fallo en flujo de subida individual.")
-                    self._log("ERROR", f"✗ Fallo al subir {ruta_archivo.name} a {plataforma.upper()}.")
+                    self._log("ERROR", f"Fallo al subir {ruta_archivo.name} a {plataforma.upper()}.")
 
         except Exception as err:
             self._log("ERROR", f"Excepción durante la publicación en {plataforma}: {err}")
@@ -190,58 +200,68 @@ class OrquestadorPublicacionIndividual:
             await self._multiplex.cerrar_todo()
 
         if exito_global:
-            self._log("OK", f"✓ Publicación directa de '{titulo}' en {plataforma.upper()} finalizada con éxito.")
+            self._log("OK", f"Publicación directa de '{titulo}' en {plataforma.upper()} finalizada con éxito.")
         else:
-            self._log("WARN", f"! Publicación directa completada con observaciones o errores.")
+            self._log("WARN", f"Publicación directa completada con observaciones o errores.")
 
         return exito_global
+
+    def _recortar_video_bajo_demanda(self, id_video: str) -> bool:
+        """Corta el video en partes de forma automática si aún no ha sido segmentado."""
+        try:
+            self._log("INFO", f"Segmentando '{id_video}' bajo demanda antes de publicar clips...")
+            from fase2_edicion.orquestador_edicion_principal import OrquestadorEdicionPrincipal
+            orq = OrquestadorEdicionPrincipal()
+            orq._procesar_video_completo(id_video, "")
+            return True
+        except Exception as e:
+            self._log("ERROR", f"Fallo al recortar video '{id_video}': {e}")
+            return False
 
     def _obtener_archivos_y_metadatos(self, id_video: str, modo: str) -> Optional[Dict[str, Any]]:
         """Busca el video en descargas/ o procesados/ y extrae sus metadatos."""
         dir_desc = self._dir_descargas / id_video
         dir_proc = self._dir_procesados / id_video
-
+        dir_hijos = dir_desc / "clips"
         archivos: List[Any] = []
         metadata: Dict[str, Any] = {}
 
-        if modo == "completo" or not dir_proc.exists():
+        if modo == "completo":
             if dir_desc.exists():
                 vids = [f for f in dir_desc.iterdir() if f.is_file() and f.suffix.lower() in ('.mp4', '.webm', '.mkv') and f.stat().st_size > 0]
                 if vids:
                     archivos.append((vids[0], 1))
-                meta_file = dir_desc / "metadata.json"
-                if meta_file.exists():
+                m_file = dir_desc / "metadata.json"
+                if m_file.exists():
                     try:
-                        with open(meta_file, "r", encoding="utf-8") as f:
-                            metadata = json.load(f)
-                    except Exception:
-                        pass
+                        with open(m_file, "r", encoding="utf-8") as f: metadata = json.load(f)
+                    except Exception: pass
 
         if modo == "clips" or not archivos:
-            if dir_proc.exists():
+            clips = sorted(dir_hijos.glob("*.mp4")) if dir_hijos.exists() else []
+            if not clips and dir_proc.exists():
                 clips = sorted(dir_proc.glob("*.mp4"))
-                for idx, c in enumerate(clips, 1):
-                    archivos.append((c, idx))
-                meta_seg = dir_proc / "metadata_segmentada.json"
-                if meta_seg.exists():
-                    try:
-                        with open(meta_seg, "r", encoding="utf-8") as f:
-                            metadata = json.load(f)
-                    except Exception:
-                        pass
+            if not clips and dir_desc.exists():
+                self._recortar_video_bajo_demanda(id_video)
+                clips = sorted(dir_hijos.glob("*.mp4")) if dir_hijos.exists() else []
+                if not clips and dir_proc.exists():
+                    clips = sorted(dir_proc.glob("*.mp4"))
+
+            if clips:
+                archivos = [(c, idx) for idx, c in enumerate(clips, 1)]
+                for m_path in [dir_hijos / "metadata_segmentada.json", dir_proc / "metadata_segmentada.json", dir_desc / "metadata.json"]:
+                    if m_path.exists():
+                        try:
+                            with open(m_path, "r", encoding="utf-8") as f: metadata = json.load(f)
+                            break
+                        except Exception: pass
 
         if not archivos:
             return None
 
         titulo = metadata.get("titulo_original", metadata.get("titulo", f"Video {id_video}"))
         descripcion = metadata.get("descripcion_original", metadata.get("descripcion", ""))
-
-        return {
-            "titulo": titulo,
-            "descripcion": descripcion,
-            "archivos": archivos,
-            "metadata": metadata,
-        }
+        return {"titulo": titulo, "descripcion": descripcion, "archivos": archivos, "metadata": metadata}
 
     def _cargar_config(self, ruta_relativa: str) -> dict:
         ruta_abs = self._ruta_base / ruta_relativa
@@ -257,9 +277,12 @@ def main() -> None:
     parser.add_argument("--plataforma", default="telegram", choices=["telegram", "youtube", "tiktok", "facebook", "instagram"], help="Plataforma de destino.")
     parser.add_argument("--modo", default="completo", choices=["completo", "clips"], help="Modo de video: completo (HD original) o clips (segmentos).")
     parser.add_argument("--canal", default=None, help="Canal de Telegram destino (ej: @mi_canal).")
+    parser.add_argument("--headless", action="store_true", default=None, help="Ejecutar en modo invisible (headless).")
+    parser.add_argument("--visible", action="store_true", default=None, help="Ejecutar en modo visible (con ventana de Chromium).")
 
     args = parser.parse_args()
-    orquestador = OrquestadorPublicacionIndividual()
+    headless = True if args.headless else (False if args.visible else None)
+    orquestador = OrquestadorPublicacionIndividual(headless=headless)
     exito = asyncio.run(orquestador.publicar_video(
         id_video=args.id,
         plataforma=args.plataforma,

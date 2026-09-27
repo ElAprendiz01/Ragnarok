@@ -33,7 +33,11 @@ class OrquestadorPublicacionesPrincipal:
     las plataformas configuradas y ejecuta la purga en cascada final.
     """
 
-    def __init__(self, ruta_config: str = "config/parametros_globales.json") -> None:
+    def __init__(
+        self,
+        ruta_config: str = "config/parametros_globales.json",
+        headless: Optional[bool] = None,
+    ) -> None:
         self._ruta_base = Path(__file__).parent.parent.resolve()
         self._config = self._cargar_config(ruta_config)
         config_pub = self._config.get("publicacion", {})
@@ -47,7 +51,12 @@ class OrquestadorPublicacionesPrincipal:
         self._ruta_estado = self._ruta_base / config_persist.get(
             "estado_publicaciones", "datos_persistencia/estado_publicaciones.txt"
         )
-        self._headless: bool = self._config.get("extraccion", {}).get("headless", True)
+        if headless is not None:
+            self._headless = bool(headless)
+        else:
+            self._headless = self._config.get("publicacion", {}).get(
+                "headless", self._config.get("extraccion", {}).get("headless", False)
+            )
 
         # Instanciar submódulos
         self._inyector = HijoInyectorDeMetadatosYCarga()
@@ -99,7 +108,7 @@ class OrquestadorPublicacionesPrincipal:
         finally:
             await self._multiplex.cerrar_todo()
 
-        self._log("[ORQ] ✓ Fase 3 completada exitosamente.")
+        self._log("[ORQ] [OK] Fase 3 completada exitosamente.")
 
 
     def _log(self, mensaje: str) -> None:
@@ -107,11 +116,11 @@ class OrquestadorPublicacionesPrincipal:
         from datetime import datetime
         estampa = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         nivel = "INFO"
-        if "[ERROR]" in mensaje or "Fallo" in mensaje or "✗" in mensaje:
+        if "[ERROR]" in mensaje or "Fallo" in mensaje:
             nivel = "ERROR"
         elif "!" in mensaje or "PENDIENTE" in mensaje:
             nivel = "WARN"
-        elif "✓" in mensaje or "exitos" in mensaje.lower():
+        elif "[OK]" in mensaje or "exitos" in mensaje.lower():
             nivel = "OK"
 
         print(f"{estampa}  {mensaje}")
@@ -167,7 +176,8 @@ class OrquestadorPublicacionesPrincipal:
                     ruta_a_subir = ruta_hd if ruta_hd.exists() else ruta_clip
                     canal_target = self._config.get("publicacion", {}).get("canal_telegram", "")
                     exito = await publicador.iniciar_flujo_subida(
-                        contexto, ruta_a_subir, titulo, descripcion, canal_target=canal_target, numero_parte=numero_parte
+                        contexto, ruta_a_subir, titulo, descripcion, canal_target=canal_target, numero_parte=numero_parte,
+                        callback_log=lambda lvl, msg: self._log(f"[{plataforma.upper()}] {msg}")
                     )
                 else:
                     exito = await publicador.iniciar_flujo_subida(

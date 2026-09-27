@@ -1,0 +1,30 @@
+{
+  "id_video": "demo_recorte",
+  "url_original": "",
+  "titulo_original": "Demostración de Segmentación de Video",
+  "descripcion_original": "Video demostrativo con 3 partes recortadas en descargas/demo_recorte/clips/",
+  "fecha_segmentacion": "2026-09-27T17:48:26Z",
+  "duracion_original_segundos": 12.0,
+  "factor_velocidad_aplicado": 1,
+  "total_partes": 3,
+  "segmentos": [
+    {
+      "numero_parte": 1,
+      "inicio_segundos": 0.0,
+      "fin_segundos": 4.0,
+      "duracion_segundos": 4.0
+    },
+    {
+      "numero_parte": 2,
+      "inicio_segundos": 4.0,
+      "fin_segundos": 8.0,
+      "duracion_segundos": 4.0
+    },
+    {
+      "numero_parte": 3,
+      "inicio_segundos": 8.0,
+      "fin_segundos": 12.0,
+      "duracion_segundos": 4.0
+    }
+  ]
+}
