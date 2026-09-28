@@ -31,11 +31,30 @@ MANIFEST
 #   before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
-# Perfiles de navegador y datos persistentes
+# ==============================================================================
+# RAGNAROK: Archivos de operación, persistencia y multimedia
+# ==============================================================================
+# Archivos de persistencia (.txt de colas, enlaces, estados, fuentes y logs)
 datos_persistencia/
+
+# Videos descargados originales (Fase 1)
 descargas/
 
-# Credenciales y cookies
+# Videos particionados y procesados con sus metadatos segmentados (Fase 2)
+procesados/
+
+# Carpeta de pruebas y scratch temporales
+scratch/
+
+# Formatos de video pesado (evita rastreo accidental de videos)
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+*.flv
+
+# Credenciales y cookies de sesión
 config/cookies_*.json
 
 # Archivos de entorno y temporales
